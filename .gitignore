@@ -1,0 +1,7 @@
+node_modules/
+.tmptest/
+_site/
+*.log
+# ローカルのバックアップコピー（リポジトリには含めない）
+atelier copy.html
+atelier - コピー.html
