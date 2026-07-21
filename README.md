@@ -6,10 +6,10 @@ HTML は完成品ではなく、創作物を包む器。Hatlier（H + at + *lier
 
 ## すぐ使う
 
-1. [`hatlier.html`](./hatlier.html) をブラウザで開く（または [`index.html`](./index.html)）
-2. 文字をクリックして直す／ブロックを足す・並べる
-3. 「HTML書き出し」で 1 枚の HTML を渡す
+- デモ: https://hatlier.github.io/hatlier/
+- ローカル: [`hatlier.html`](./hatlier.html) をブラウザで開く（または [`index.html`](./index.html)）
 
+文字をクリックして直す → ブロックを足す・並べる → 「HTML書き出し」で 1 枚の HTML を渡す。  
 サーバーもインストールも不要です。
 
 ## 名前
@@ -26,8 +26,8 @@ HTML は完成品ではなく、創作物を包む器。Hatlier（H + at + *lier
 - Hatlier の土俵は「ちょっとしたページを、自分の手で直して渡す」こと
 - 詳細は [`SPEC.md`](./SPEC.md)
 
-## リポジトリ
+## ライセンス
 
-Organization: **Hatlier** / メインリポ想定: **`Hatlier/hatlier`**
+[MIT](./LICENSE) © 2026 Hatlier
 
 旧称 Atelier。書き出し済みの `atelier-doc` 付き HTML も「開く」で読めます。

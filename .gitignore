@@ -1,7 +1,15 @@
-node_modules/
-.tmptest/
-_site/
+# OS / editor
+.DS_Store
+Thumbs.db
 *.log
-# ローカルのバックアップコピー（リポジトリには含めない）
+
+# Local junk / backups
 atelier copy.html
 atelier - コピー.html
+atelier - コピー*.html
+*.tmp
+
+# If a build tree appears later
+node_modules/
+dist/
+.cache/
