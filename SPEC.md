@@ -408,11 +408,11 @@ MVPで「直せる／1HTMLで渡せる」ができたあと、**ZIP層**と**置
 
 ### 8.4 ローカル → Org への移し方（目安）
 
-1. ~~コピーHTMLを掃除~~（済）／対外名を Hatlier に揃える（済: `hatlier.html`）
-2. `Hatlier/hatlier` を作り、この作業ツリーを push
-3. GitHub Pages で `hatlier.html` を配信（デモ入口）
+1. ~~コピーHTMLを掃除~~／対外名を Hatlier に揃える（済: `hatlier.html`）
+2. ~~`Hatlier/hatlier` を作り push~~（済: https://github.com/Hatlier/hatlier ）
+3. ~~GitHub Pages~~（済: https://hatlier.github.io/hatlier/ ）
 
-未決: ライセンス（MIT想定か）、Pagesのカスタムドメイン有無
+ライセンス: MIT（リポ内 `LICENSE`）
 
 ---
 
