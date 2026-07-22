@@ -670,7 +670,7 @@ body.freemode .free-wrap{display:block}
 <header class="topbar">
   <div class="brand">
     <span class="dot"></span>Hatlier
-    <a class="ver" id="app-ver" href="https://github.com/Hatlier/hatlier/blob/main/ROADMAP.md" target="_blank" rel="noopener" title="バージョンと開発予定（ROADMAP）">v0.3.0</a>
+    <a class="ver" id="app-ver" href="https://github.com/Hatlier/hatlier/blob/main/ROADMAP.md" target="_blank" rel="noopener" title="バージョンと開発予定（ROADMAP）">v0.3.1</a>
   </div>
   <button class="txtbtn" id="btn-new">新規</button>
   <button class="txtbtn" id="btn-open" title="Hatlierで書き出したHTML、またはHatlier形式のHTMLを読み込んで編集">開く</button>
@@ -701,8 +701,8 @@ body.freemode .free-wrap{display:block}
         <button type="button" data-ex="zip" role="menuitem">ZIP（HTML+static）<span class="ex-sub">静的ホストに上げやすい形</span></button>
         <button type="button" data-ex="pdf" role="menuitem">PDF<span class="ex-sub">印刷ダイアログ → PDFに保存</span></button>
         <button type="button" data-ex="png" role="menuitem">PNG 一枚絵<span class="ex-sub">ページ全体の静止画</span></button>
-        <button type="button" data-ex="webm" role="menuitem">WebM 短尺<span class="ex-sub">一枚絵を短い動画に</span></button>
-        <button type="button" data-ex="flip" role="menuitem">スライド動画（WebM）<span class="ex-sub">ブロックをパラパラで</span></button>
+        <button type="button" data-ex="webm" role="menuitem">短尺動画<span class="ex-sub">MP4優先 / なければWebM（ブラウザで再生）</span></button>
+        <button type="button" data-ex="flip" role="menuitem">スライド動画<span class="ex-sub">ブロックをパラパラ（MP4優先）</span></button>
       </div>
     </div>
   </div>
@@ -829,7 +829,7 @@ body.freemode .free-wrap{display:block}
 const $  = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const uid = () => "b" + Math.random().toString(36).slice(2, 9);
-const HATLIER_VERSION = "0.3.0";
+const HATLIER_VERSION = "0.3.1";
 const STORE_KEY = "hatlier.v1";
 const STORE_KEY_LEGACY = "atelier.v1";
 const FREE_KEY = "hatlier.free.v1";
@@ -2535,8 +2535,12 @@ function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
 function waitDocImages(idoc){
   const imgs = [...idoc.images];
   return Promise.all(imgs.map(img => {
-    if (img.complete) return null;
-    return new Promise(res => { img.onload = img.onerror = () => res(); });
+    if (img.complete && img.naturalWidth) return null;
+    return new Promise(res => {
+      const done = () => res();
+      img.onload = done; img.onerror = done;
+      setTimeout(done, 4000);
+    });
   }));
 }
 
@@ -2546,62 +2550,133 @@ function loadExportFrame(html, width){
     iframe.setAttribute("sandbox", "allow-same-origin");
     iframe.style.cssText = `position:fixed;left:-14000px;top:0;width:${width}px;height:900px;border:0;opacity:0;pointer-events:none`;
     document.body.appendChild(iframe);
-    const t = setTimeout(() => reject(new Error("書き出し用プレビューの読み込みがタイムアウトしました")), 20000);
+    const t = setTimeout(() => {
+      iframe.remove();
+      reject(new Error("書き出し用プレビューの読み込みがタイムアウトしました"));
+    }, 20000);
     iframe.onload = async () => {
       clearTimeout(t);
       try {
         const idoc = iframe.contentDocument;
         if (!idoc) throw new Error("プレビューを開けませんでした");
         await waitDocImages(idoc);
-        await sleep(40);
+        await sleep(60);
         const root = idoc.querySelector(".page") || idoc.body;
         resolve({ iframe, idoc, root });
-      } catch(e){ reject(e); }
+      } catch(e){
+        iframe.remove();
+        reject(e);
+      }
+    };
+    iframe.onerror = () => {
+      clearTimeout(t);
+      iframe.remove();
+      reject(new Error("プレビューの読み込みに失敗しました"));
     };
     iframe.srcdoc = html;
   });
 }
 
-/* SVG foreignObject 経由で同一オリジン文書をラスタライズ（外部ライブラリなし） */
+/* CSS内 data:SVG の # や生の < が SVG/XML を壊すので保護する */
+function sanitizeCssForSvg(css){
+  return String(css || "")
+    .replace(/<\/style>/gi, "")
+    .replace(/url\(\s*(['"]?)(data:image\/svg\+xml[^)'"]*?)\1\s*\)/gi, (m, q, u) => {
+      let fixed = u.replace(/#/g, "%23");
+      if (!/%3c/i.test(fixed) && /</.test(fixed)) fixed = fixed.replace(/</g, "%3C").replace(/>/g, "%3E");
+      return `url(${q}${fixed}${q})`;
+    });
+}
+
+function cloneToXhtml(srcEl, w, bg, cssText){
+  const NS = "http://www.w3.org/1999/xhtml";
+  const wrap = document.createElementNS(NS, "div");
+  wrap.setAttribute("style", `width:${w}px;margin:0;padding:0;background:${bg};box-sizing:border-box`);
+  const st = document.createElementNS(NS, "style");
+  st.textContent = sanitizeCssForSvg(cssText);
+  wrap.appendChild(st);
+
+  const host = document.createElementNS(NS, "div");
+  if (srcEl.className) host.setAttribute("class", String(srcEl.className));
+  [...srcEl.attributes].forEach(a => {
+    if (a.name === "class" || a.name === "style") return;
+    try { host.setAttribute(a.name, a.value); } catch {}
+  });
+  const srcStyle = srcEl.getAttribute("style");
+  host.setAttribute("style", (srcStyle ? srcStyle + ";" : "") + `width:${w}px;box-sizing:border-box`);
+
+  /* HTML → いったんパースしてから XHTML ノードへ（不正な入れ子を減らす） */
+  const tmp = document.createElement("div");
+  tmp.innerHTML = srcEl.innerHTML;
+  tmp.querySelectorAll("script").forEach(n => n.remove());
+  const walk = (from, to) => {
+    [...from.childNodes].forEach(ch => {
+      if (ch.nodeType === 3){
+        to.appendChild(document.createTextNode(ch.textContent));
+        return;
+      }
+      if (ch.nodeType !== 1) return;
+      const tag = ch.tagName.toLowerCase();
+      if (tag === "script") return;
+      let node;
+      try { node = document.createElementNS(NS, tag); }
+      catch { return; }
+      [...ch.attributes].forEach(a => {
+        try {
+          let v = a.value;
+          if (/^data:image\/svg\+xml/i.test(v)) v = v.replace(/#/g, "%23");
+          node.setAttribute(a.name, v);
+        } catch {}
+      });
+      walk(ch, node);
+      to.appendChild(node);
+    });
+  };
+  walk(tmp, host);
+  wrap.appendChild(host);
+  return new XMLSerializer().serializeToString(wrap);
+}
+
+/* SVG foreignObject 経由でラスタライズ */
 async function htmlToCanvas(html, { width = 800, scale = 2 } = {}){
   const { iframe, idoc, root } = await loadExportFrame(html, width);
   try {
     const w = width;
     let h = Math.max(root.scrollHeight, idoc.body.scrollHeight, root.offsetHeight, 1);
-    iframe.style.height = Math.min(h + 40, 16000) + "px";
-    await sleep(30);
+    iframe.style.height = Math.min(h + 80, 16000) + "px";
+    await sleep(50);
     h = Math.max(root.scrollHeight, idoc.body.scrollHeight, root.offsetHeight, 1);
     const maxPx = 8192;
     let s = scale;
     if (h * s > maxPx) s = maxPx / h;
     if (w * s > maxPx) s = Math.min(s, maxPx / w);
 
-    let css = "html,body{margin:0;padding:0;}";
+    let css = "html,body{margin:0;padding:0;}img,video,embed{max-width:100%;height:auto;}";
     idoc.querySelectorAll("style").forEach(st => { css += st.textContent; });
     const bg = (idoc.defaultView && getComputedStyle(idoc.body).backgroundColor) || "#ffffff";
-    const bodyAttrs = [...idoc.body.attributes].map(a => `${a.name}="${esc(a.value)}"`).join(" ");
-    const inner = idoc.body.innerHTML;
-    const xhtml = `<div xmlns="http://www.w3.org/1999/xhtml" ${bodyAttrs} style="width:${w}px;margin:0;background:${bg}">` +
-      `<style>${css.replace(/<\/style>/gi, "")}</style>${inner}</div>`;
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">` +
-      `<foreignObject width="100%" height="100%">${xhtml}</foreignObject></svg>`;
-    const url = URL.createObjectURL(new Blob([svg], { type:"image/svg+xml;charset=utf-8" }));
-    try {
-      const img = new Image();
-      img.decoding = "sync";
-      await new Promise((res, rej) => { img.onload = () => res(); img.onerror = () => rej(new Error("画像化に失敗しました")); img.src = url; });
-      const canvas = document.createElement("canvas");
-      canvas.width = Math.max(1, Math.ceil(w * s));
-      canvas.height = Math.max(1, Math.ceil(h * s));
-      const ctx = canvas.getContext("2d");
-      ctx.setTransform(s, 0, 0, s, 0, 0);
-      ctx.fillStyle = bg;
-      ctx.fillRect(0, 0, w, h);
-      ctx.drawImage(img, 0, 0);
-      return { canvas, width: w, height: h, scale: s, bg };
-    } finally {
-      URL.revokeObjectURL(url);
-    }
+    const target = idoc.body;
+    const xhtml = cloneToXhtml(target, w, bg, css);
+    const svg =
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">` +
+      `<foreignObject x="0" y="0" width="${w}" height="${h}">${xhtml}</foreignObject></svg>`;
+
+    const url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    await new Promise((res, rej) => {
+      img.onload = () => res();
+      img.onerror = () => rej(new Error("画像化に失敗しました（複雑すぎるスタイルの可能性）"));
+      img.src = url;
+    });
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.ceil(w * s));
+    canvas.height = Math.max(1, Math.ceil(h * s));
+    const ctx = canvas.getContext("2d");
+    ctx.setTransform(s, 0, 0, s, 0, 0);
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, w, h);
+    ctx.drawImage(img, 0, 0);
+    return { canvas, width: w, height: h, scale: s, bg };
   } finally {
     iframe.remove();
   }
@@ -2640,40 +2715,77 @@ async function exportPNG(){
 
 function pickRecorderMime(){
   if (typeof MediaRecorder === "undefined") return "";
+  /* Windows標準プレーヤーは WebM 非対応が多い → MP4 を先に試す（対応ブラウザのみ） */
   const cands = [
-    "video/webm;codecs=vp9,opus",
-    "video/webm;codecs=vp8,opus",
-    "video/webm",
-    "video/mp4"
+    "video/mp4",
+    "video/mp4;codecs=avc1",
+    "video/webm;codecs=vp9",
+    "video/webm;codecs=vp8",
+    "video/webm"
   ];
-  return cands.find(t => MediaRecorder.isTypeSupported(t)) || "";
+  return cands.find(t => {
+    try { return MediaRecorder.isTypeSupported(t); } catch { return false; }
+  }) || "";
 }
 
-async function recordCanvasWebm(canvas, { ms = 2000, fps = 30 } = {}){
+function extFromRecorderMime(mime){
+  if (/mp4/i.test(mime)) return "mp4";
+  return "webm";
+}
+
+async function recordCanvasVideo(canvas, { ms = 2000, fps = 30 } = {}){
   const mime = pickRecorderMime();
   if (!mime) throw new Error("このブラウザでは動画書き出しに対応していません");
   const stream = canvas.captureStream(fps);
-  const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 2500000 });
+  /* 静止画キャンバスはフレームが来ないことがあるので、録画中に描き直す */
+  const ctx = canvas.getContext("2d");
+  const snap = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  let timer = null;
+  const tick = () => {
+    ctx.putImageData(snap, 0, 0);
+  };
+  timer = setInterval(tick, Math.max(16, 1000 / fps));
+
+  let rec;
+  try {
+    rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 2500000 });
+  } catch {
+    rec = new MediaRecorder(stream);
+  }
   const chunks = [];
   rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
   const stopped = new Promise(r => { rec.onstop = r; });
-  rec.start();
+  rec.start(200);
   await sleep(ms);
   rec.stop();
   await stopped;
+  clearInterval(timer);
   stream.getTracks().forEach(t => t.stop());
-  const ext = mime.includes("mp4") ? "mp4" : "webm";
-  return { blob: new Blob(chunks, { type: mime.split(";")[0] }), ext };
+  if (!chunks.length) throw new Error("動画データが空でした");
+  const usedMime = rec.mimeType || mime;
+  return { blob: new Blob(chunks, { type: usedMime.split(";")[0] }), ext: extFromRecorderMime(usedMime), mime: usedMime };
 }
 
-async function exportWebmStill(){
-  toast("WebMを生成しています…");
+function openBlobInBrowser(blob, label){
+  const url = URL.createObjectURL(blob);
+  const w = window.open(url, "_blank");
+  if (!w) toast(`${label}を保存しました — ポップアップがブロックされたのでブラウザ再生はスキップ`);
+  else setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
+async function exportVideoStill(){
+  toast("動画を生成しています…");
   try {
     const { html, title } = getExportPayload();
     const { canvas } = await htmlToCanvas(html, { width: 960, scale: 1.25 });
-    const { blob, ext } = await recordCanvasWebm(canvas, { ms: 2200, fps: 30 });
+    const { blob, ext } = await recordCanvasVideo(canvas, { ms: 2400, fps: 30 });
     downloadBlob(blob, title + "." + ext);
-    toast(`${ext.toUpperCase()}を書き出しました（静止画の短尺）`);
+    if (ext === "webm"){
+      openBlobInBrowser(blob, "WebM");
+      toast("WebMを保存＋ブラウザで開きました（Windows標準プレーヤーは非対応なことが多いです）");
+    } else {
+      toast(`MP4を書き出しました`);
+    }
   } catch(e){
     console.error(e);
     toast(e.message || "動画の書き出しに失敗しました");
@@ -2697,9 +2809,9 @@ ${css}
 </body></html>`;
 }
 
-async function exportFlipWebm(){
+async function exportFlipVideo(){
   if (freeMode){
-    toast("スライド動画はブロック編集向けです — フリー編集では PNG / WebM 短尺を使ってください");
+    toast("スライド動画はブロック編集向けです — フリー編集では PNG / 短尺動画を使ってください");
     return;
   }
   if (!doc.blocks.length){ toast("ブロックがありません"); return; }
@@ -2712,31 +2824,38 @@ async function exportFlipWebm(){
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext("2d");
   const stream = canvas.captureStream(30);
-  const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 3200000 });
+  let rec;
+  try { rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 3200000 }); }
+  catch { rec = new MediaRecorder(stream); }
   const chunks = [];
   rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
   const stopped = new Promise(r => { rec.onstop = r; });
-  rec.start();
+  rec.start(200);
 
   try {
     for (let i = 0; i < doc.blocks.length; i++){
       const slideHtml = buildSlideHTML(doc.blocks[i]);
       const { canvas: slide, bg } = await htmlToCanvas(slideHtml, { width: W, scale: 1 });
-      ctx.fillStyle = bg || "#111";
-      ctx.fillRect(0, 0, W, H);
-      const scale = Math.min(W / slide.width, H / slide.height);
-      const dw = slide.width * scale, dh = slide.height * scale;
-      ctx.drawImage(slide, (W - dw) / 2, (H - dh) / 2, dw, dh);
-      // 枚数インジケータ
-      ctx.fillStyle = "rgba(0,0,0,.45)";
-      ctx.fillRect(W - 86, H - 36, 74, 24);
-      ctx.fillStyle = "#fff";
-      ctx.font = "600 13px system-ui,sans-serif";
-      ctx.fillText(`${i + 1}/${doc.blocks.length}`, W - 74, H - 19);
-      await sleep(1400);
+      const drawSlide = () => {
+        ctx.fillStyle = bg || "#111";
+        ctx.fillRect(0, 0, W, H);
+        const scale = Math.min(W / slide.width, H / slide.height);
+        const dw = slide.width * scale, dh = slide.height * scale;
+        ctx.drawImage(slide, (W - dw) / 2, (H - dh) / 2, dw, dh);
+        ctx.fillStyle = "rgba(0,0,0,.45)";
+        ctx.fillRect(W - 86, H - 36, 74, 24);
+        ctx.fillStyle = "#fff";
+        ctx.font = "600 13px system-ui,sans-serif";
+        ctx.fillText(`${i + 1}/${doc.blocks.length}`, W - 74, H - 19);
+      };
+      const end = performance.now() + 1400;
+      while (performance.now() < end){
+        drawSlide();
+        await sleep(33);
+      }
     }
   } catch(e){
-    rec.stop();
+    try { rec.stop(); } catch {}
     stream.getTracks().forEach(t => t.stop());
     console.error(e);
     toast(e.message || "スライド動画の生成に失敗しました");
@@ -2746,10 +2865,18 @@ async function exportFlipWebm(){
   rec.stop();
   await stopped;
   stream.getTracks().forEach(t => t.stop());
-  const ext = mime.includes("mp4") ? "mp4" : "webm";
+  if (!chunks.length){ toast("動画データが空でした"); return; }
+  const usedMime = rec.mimeType || mime;
+  const ext = extFromRecorderMime(usedMime);
   const title = safeFilename((doc.blocks.find(b => b.type === "hero")?.props.title || "slides"), "slides");
-  downloadBlob(new Blob(chunks, { type: mime.split(";")[0] }), title + "-slides." + ext);
-  toast(`スライド動画（${ext.toUpperCase()}）を書き出しました`);
+  const blob = new Blob(chunks, { type: usedMime.split(";")[0] });
+  downloadBlob(blob, title + "-slides." + ext);
+  if (ext === "webm"){
+    openBlobInBrowser(blob, "スライドWebM");
+    toast("スライドWebMを保存＋ブラウザで開きました（標準プレーヤー非対応なことが多いです）");
+  } else {
+    toast(`スライド動画（MP4）を書き出しました`);
+  }
 }
 
 const exMenu = $("#exmenu");
@@ -2776,8 +2903,8 @@ exMenu.addEventListener("click", e => {
   else if (kind === "zip") exportZip();
   else if (kind === "pdf") exportPDF();
   else if (kind === "png") exportPNG();
-  else if (kind === "webm") exportWebmStill();
-  else if (kind === "flip") exportFlipWebm();
+  else if (kind === "webm") exportVideoStill();
+  else if (kind === "flip") exportFlipVideo();
 });
 document.addEventListener("click", e => {
   if (!e.target.closest(".export-wrap")) closeExportMenu();
