@@ -617,6 +617,8 @@ body.freemode .center{display:none}
 body.freemode #btn-new,body.freemode #btn-open,body.freemode #btn-ai{display:none}
 #btn-back{display:none}
 body.freemode #btn-back{display:inline-block}
+#mode-chip{display:none;align-items:center;margin-left:4px;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.04em;color:#1A3A8A;background:rgba(46,95,232,.12);white-space:nowrap}
+body.freemode #mode-chip{display:inline-flex}
 .free-wrap{display:none;padding:26px 0 40px}
 body.freemode .free-wrap{display:block}
 .free-inner{width:min(1100px,96vw);margin:0 auto}
@@ -676,12 +678,13 @@ body.freemode .free-wrap{display:block}
 <header class="topbar">
   <div class="brand">
     <span class="dot"></span>Hatlier
-    <a class="ver" id="app-ver" href="https://github.com/Hatlier/hatlier/blob/main/ROADMAP.md" target="_blank" rel="noopener" title="バージョンと開発予定（ROADMAP）">v0.3.2</a>
+    <a class="ver" id="app-ver" href="https://github.com/Hatlier/hatlier/blob/main/ROADMAP.md" target="_blank" rel="noopener" title="バージョンと開発予定（ROADMAP）">v0.3.3</a>
   </div>
-  <button class="txtbtn" id="btn-new">新規</button>
+  <button class="txtbtn" id="btn-new" title="テンプレートから新しい文書を作る">新規</button>
   <button class="txtbtn" id="btn-open" title="Hatlierで書き出したHTML、またはHatlier形式のHTMLを読み込んで編集">開く</button>
   <button class="txtbtn" id="btn-import" title="AI出力や任意のHTMLを貼る。Hatlier形式ならブロック編集、それ以外はフリー編集">貼る</button>
-  <button class="txtbtn" id="btn-back" title="Hatlierのブロック編集に戻る（取り込んだHTMLは保持されます）">ブロック編集に戻る</button>
+  <span class="mode-chip" id="mode-chip" title="いまはフリー編集です。ブロック編集に戻っても内容は保持されます">フリー編集中</span>
+  <button class="txtbtn" id="btn-back" title="ブロック編集に戻る（フリー編集の内容はブラウザ内に保持されます）">ブロック編集に戻る</button>
   <div class="center">
     <div id="themes"></div>
     <span class="vsep"></span>
@@ -698,10 +701,10 @@ body.freemode .free-wrap{display:block}
     <button class="icobtn" id="btn-redo" title="やり直す (⌘⇧Z)">
       <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3.5l3 3-3 3"/><path d="M13 6.5H6.5a3.5 3.5 0 0 0 0 7H8"/></svg>
     </button>
-    <button class="txtbtn" id="btn-save" title="このブラウザに途中保存（localStorage）。配るときはHTML書き出しを使ってください">保存</button>
+    <button class="txtbtn" id="btn-save" title="このブラウザ内だけに保存します。ファイルにはなりません。配る・残すときは「書き出し」を使ってください">保存</button>
     <span class="save-meta" id="save-meta" aria-live="polite"></span>
     <div class="export-wrap">
-      <button class="primary" id="btn-export" title="書き出し形式を選ぶ" aria-haspopup="true" aria-expanded="false">書き出し</button>
+      <button class="primary" id="btn-export" title="ファイルに書き出します（HTML / ZIP / PDF / PNG / 動画）。保存（ブラウザ内）とは別です" aria-haspopup="true" aria-expanded="false">書き出し</button>
       <div class="exmenu" id="exmenu" role="menu">
         <button type="button" data-ex="html" role="menuitem">HTML 1枚<span class="ex-sub">メール添付・そのまま配布向き</span></button>
         <button type="button" data-ex="zip" role="menuitem">ZIP（HTML+static）<span class="ex-sub">静的ホストに上げやすい形</span></button>
@@ -722,7 +725,7 @@ body.freemode .free-wrap{display:block}
   <div class="free-inner">
     <div class="free-note">
       <span class="free-badge">フリー編集</span>
-      <span>文字はクリックして書き換え、画像はクリックして差し替え。リンクをクリックするとURLを変更できます。スクリプトは編集中は動きません（書き出しにはそのまま残ります）。</span>
+      <span>文字・画像・リンクだけ直せます（レイアウトは元のまま）。上の<strong>「ブロック編集に戻る」</strong>でブロック編集に戻れます（この内容はブラウザ内に保持）。配るときは右上の<strong>書き出し</strong>を使ってください。</span>
     </div>
     <iframe id="free-frame" sandbox="allow-same-origin" title="取り込んだHTMLの編集"></iframe>
   </div>
@@ -741,7 +744,7 @@ body.freemode .free-wrap{display:block}
     <div class="modal-head">
       <div>
         <div class="mh-t">テンプレートから始める</div>
-        <div class="mh-d">雛形を選ぶと、その構成で新しい文書を作成します。今の内容は ⌘Z（Ctrl+Z）で戻せます。</div>
+        <div class="mh-d">雛形を選ぶと新しい文書になります。<strong>保存</strong>はブラウザ内、<strong>書き出し</strong>でファイルになります。いまの内容は ⌘Z で戻せます。</div>
       </div>
       <button class="modal-x" id="tpl-x" title="閉じる (Esc)">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
@@ -860,7 +863,7 @@ body.freemode .free-wrap{display:block}
 const $  = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const uid = () => "b" + Math.random().toString(36).slice(2, 9);
-const HATLIER_VERSION = "0.3.2";
+const HATLIER_VERSION = "0.3.3";
 const STORE_KEY = "hatlier.v1";
 const STORE_KEY_LEGACY = "atelier.v1";
 const FREE_KEY = "hatlier.free.v1";
@@ -1444,18 +1447,23 @@ let editSnap = null;      // テキスト編集セッション開始時のスナ
 let saveWarned = false;
 
 const snap = () => JSON.stringify(doc);
+let dirtySinceExport = false;
+function markDirty(){ dirtySinceExport = true; }
+function markExported(){ dirtySinceExport = false; }
+
 function pushUndo(prev){
   undoStack.push(prev);
   if (undoStack.length > 100) undoStack.shift();
   redoStack.length = 0;
   syncHistoryBtns();
+  markDirty();
 }
 function save(){
   try {
     localStorage.setItem(STORE_KEY, snap());
     return true;
   } catch(e){
-    if (!saveWarned){ saveWarned = true; toast("内容が大きく自動保存できません — 「HTML書き出し」で保存してください"); }
+    if (!saveWarned){ saveWarned = true; toast("内容が大きくブラウザに保存できません — 「書き出し」でファイルにしてください"); }
     return false;
   }
 }
@@ -1476,18 +1484,18 @@ function saveExplicit(){
       localStorage.setItem(FREE_KEY, freeSerialize());
       localStorage.setItem(MODE_KEY, "free");
       markSaved(true);
-      toast("このブラウザに保存しました（別端末には渡りません — 配るときはHTML書き出し）");
+      toast("ブラウザ内に保存しました — ファイルにはなっていません。配るときは「書き出し」");
       return true;
     } catch(e){
       markSaved(false);
-      toast("保存できませんでした — 「HTML書き出し」でファイルにしてください");
+      toast("ブラウザに保存できませんでした — 「書き出し」でファイルにしてください");
       return false;
     }
   }
   const ok = save();
   markSaved(ok);
-  if (ok) toast("このブラウザに保存しました（別端末には渡りません — 配るときはHTML書き出し）");
-  else toast("保存できませんでした — 「HTML書き出し」でファイルにしてください");
+  if (ok) toast("ブラウザ内に保存しました — ファイルにはなっていません。配るときは「書き出し」");
+  else toast("ブラウザに保存できませんでした — 「書き出し」でファイルにしてください");
   return ok;
 }
 function lsGet(primary, legacy){
@@ -2435,6 +2443,7 @@ async function downloadBlobAs(blob, titleOrStem, ext){
   const name = await askSaveFilename(stem, ext);
   if (!name) return null;
   downloadBlob(blob, name);
+  markExported();
   return name;
 }
 
@@ -2606,6 +2615,7 @@ function exportZip(){
       const base = safeFilename(full.replace(/\.zip$/i, ""), "document");
       const files = htmlToStaticFiles(html, base);
       downloadBlob(buildZip(files), full);
+      markExported();
       toast(`ZIPを書き出しました（${files.length}ファイル）— 静的ホスト向け`);
     } catch(e){
       console.error(e);
@@ -2788,6 +2798,7 @@ function exportPDF(){
   w.document.open();
   w.document.write(html.replace(/<\/head>/i, printCss + "</head>") + boot);
   w.document.close();
+  markExported();
   toast(`「${title}」— 印刷ダイアログで「PDFに保存」を選んでください`);
 }
 
@@ -3132,10 +3143,18 @@ function classifyHTML(text){
   return { kind:"free", how:"free", html: t };
 }
 
+/* 貼る／開くの結果メッセージ（D3: 文言を固定） */
+const INGEST_MSG = {
+  empty: "HTMLが空です — コードを貼るかファイルを選んでください",
+  json: "Hatlier形式として開きました（ブロック編集できます）",
+  dom: "ブロック構造を検出して開きました（ブロック編集できます）",
+  free: "Hatlier形式ではないためフリー編集で開きました。文字・画像・リンクを直せます。ブロック編集したい場合は ✦ から作り直して「貼る」へ",
+};
+
 function ingestHTML(text, opts){
   const c = classifyHTML(text);
   if (c.kind === "empty"){
-    toast("HTMLが空です");
+    toast(INGEST_MSG.empty);
     return false;
   }
   if (c.kind === "blocks"){
@@ -3144,15 +3163,13 @@ function ingestHTML(text, opts){
     save();
     setMode(false);
     flipRender();
+    markDirty();
     if (!opts || !opts.quiet){
-      toast(c.how === "json"
-        ? "Hatlier形式として開きました（ブロック編集）"
-        : "ブロック構造を検出して開きました（ブロック編集）");
+      toast(c.how === "json" ? INGEST_MSG.json : INGEST_MSG.dom);
     }
     return true;
   }
-  enterFree(c.html, (opts && opts.freeMsg) ||
-    "Hatlier形式ではないため、フリー編集で開きました — 文字・画像・リンクを直せます。ブロックで触りたい場合は ✦ プロンプトで作り直してください");
+  enterFree(c.html, (opts && opts.freeMsg) || INGEST_MSG.free);
   return true;
 }
 
@@ -3183,7 +3200,18 @@ function closeTemplates(){
   tplMask.classList.remove("vis");
   setTimeout(() => tplMask.classList.remove("open"), 200);
 }
-$("#btn-new").addEventListener("click", openTemplates);
+$("#btn-new").addEventListener("click", () => {
+  if (dirtySinceExport){
+    const ok = confirm(
+      "まだ「書き出し」していない変更があります。\n" +
+      "新規にすると、いま編集中の内容はテンプレートで置き換わります。\n\n" +
+      "※「保存」はブラウザの中だけです。ファイルとして残したい場合は、先に「書き出し」してください。\n\n" +
+      "新規作成に進みますか？"
+    );
+    if (!ok) return;
+  }
+  openTemplates();
+});
 $("#tpl-x").addEventListener("click", closeTemplates);
 tplMask.addEventListener("click", e => { if (e.target === tplMask) closeTemplates(); });
 $("#tpl-grid").addEventListener("click", e => {
@@ -3376,7 +3404,7 @@ function freeSave(){
     localStorage.setItem(MODE_KEY, "free");
     return true;
   } catch(e){
-    if (!freeSaveWarned){ freeSaveWarned = true; toast("内容が大きく自動保存できません — 「HTML書き出し」で保存してください"); }
+    if (!freeSaveWarned){ freeSaveWarned = true; toast("内容が大きくブラウザに保存できません — 「書き出し」でファイルにしてください"); }
     return false;
   }
 }
@@ -3434,6 +3462,7 @@ function pushFreeUndo(prevHTML){
   if (freeUndoStack.length > 50) freeUndoStack.shift();
   freeRedoStack.length = 0;
   syncHistoryBtns();
+  markDirty();
 }
 function undoFree(){
   commitFreeEdit();
@@ -3625,7 +3654,7 @@ window.addEventListener("keydown", e => {
 $("#btn-back").addEventListener("click", () => {
   commitFreeEdit();
   setMode(false);
-  toast("ブロック編集に戻りました — 「貼る」からいつでも再開できます");
+  toast("ブロック編集に戻りました — フリー編集の内容はブラウザ内に残っています。「貼る」から再開できます");
 });
 
 /* ---- トースト ---- */
