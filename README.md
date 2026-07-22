@@ -25,6 +25,11 @@ HTML は完成品ではなく、創作物を包む器。Hatlier（H + at + *lier
 - 凝ったページは本職と生成 AI に任せる
 - Hatlier の土俵は「ちょっとしたページを、自分の手で直して渡す」こと
 - 詳細は [`SPEC.md`](./SPEC.md)
+- **これからやること**は [`ROADMAP.md`](./ROADMAP.md)（画面の `vX.Y.Z` からも開けます）
+
+## 書き出し
+
+HTML 1枚 / ZIP / PDF / PNG / WebM / スライド動画（WebM）をメニューから選べます。
 
 ## ライセンス
 

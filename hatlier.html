@@ -319,6 +319,8 @@ button{font-family:inherit;border:none;background:none;cursor:pointer;color:inhe
 }
 .brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:14px;letter-spacing:.03em;color:#1B1B20;margin-right:10px}
 .brand .dot{width:11px;height:11px;border-radius:3.5px;background:linear-gradient(135deg,#E3B860,#B4552D)}
+.brand .ver{font-size:10.5px;font-weight:600;letter-spacing:.04em;color:#8A8A93;padding:2px 7px;border-radius:999px;background:rgba(20,20,30,.06);text-decoration:none}
+.brand .ver:hover{color:#1B1B20;background:rgba(20,20,30,.1)}
 .txtbtn{font-size:12.5px;color:#55555E;padding:7px 10px;border-radius:8px;transition:background .15s,color .15s}
 .txtbtn:hover{background:rgba(20,20,30,.07);color:#1B1B20}
 .center{position:absolute;left:50%;transform:translateX(-50%);display:flex;gap:10px;align-items:center}
@@ -327,6 +329,25 @@ button{font-family:inherit;border:none;background:none;cursor:pointer;color:inhe
 .tpill.on{border-color:#1B1B20;transform:scale(1.12);box-shadow:0 0 0 3px rgba(27,27,32,.12)}
 .vsep{width:1px;height:16px;background:rgba(20,20,30,.15)}
 .actions{margin-left:auto;display:flex;align-items:center;gap:4px}
+.save-meta{font-size:11px;color:#8A8A93;padding:0 6px;min-width:4.5em;text-align:right;white-space:nowrap}
+.save-meta.ok{color:#3D6B4F}
+.export-wrap{position:relative}
+.exmenu{
+  position:absolute;right:0;top:calc(100% + 8px);z-index:80;
+  min-width:220px;padding:6px;border-radius:12px;
+  background:#FBFBFC;border:1px solid rgba(20,20,30,.1);
+  box-shadow:0 16px 40px -18px rgba(20,20,30,.45);
+  display:none;
+}
+.exmenu.open{display:block}
+.exmenu button{
+  display:block;width:100%;text-align:left;padding:10px 12px;border-radius:8px;
+  font-size:12.5px;color:#1B1B20;line-height:1.35;
+}
+.exmenu button:hover{background:rgba(20,20,30,.06)}
+.exmenu button:disabled{opacity:.45;cursor:default}
+.exmenu button:disabled:hover{background:none}
+.exmenu .ex-sub{display:block;margin-top:2px;font-size:10.5px;color:#8A8A93;font-weight:500}
 .icobtn{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;color:#55555E;transition:background .15s,color .15s,opacity .15s}
 .icobtn:hover{background:rgba(20,20,30,.07);color:#1B1B20}
 .icobtn:disabled{opacity:.28;pointer-events:none}
@@ -647,10 +668,13 @@ body.freemode .free-wrap{display:block}
 <body>
 
 <header class="topbar">
-  <div class="brand"><span class="dot"></span>Hatlier</div>
+  <div class="brand">
+    <span class="dot"></span>Hatlier
+    <a class="ver" id="app-ver" href="https://github.com/Hatlier/hatlier/blob/main/ROADMAP.md" target="_blank" rel="noopener" title="バージョンと開発予定（ROADMAP）">v0.3.0</a>
+  </div>
   <button class="txtbtn" id="btn-new">新規</button>
   <button class="txtbtn" id="btn-open" title="Hatlierで書き出したHTML、またはHatlier形式のHTMLを読み込んで編集">開く</button>
-  <button class="txtbtn" id="btn-import" title="どんなHTMLでも取り込んで、文字・画像・リンクを直接編集">取り込む</button>
+  <button class="txtbtn" id="btn-import" title="AI出力や任意のHTMLを貼る。Hatlier形式ならブロック編集、それ以外はフリー編集">貼る</button>
   <button class="txtbtn" id="btn-back" title="Hatlierのブロック編集に戻る（取り込んだHTMLは保持されます）">ブロック編集に戻る</button>
   <div class="center">
     <div id="themes"></div>
@@ -668,7 +692,19 @@ body.freemode .free-wrap{display:block}
     <button class="icobtn" id="btn-redo" title="やり直す (⌘⇧Z)">
       <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3.5l3 3-3 3"/><path d="M13 6.5H6.5a3.5 3.5 0 0 0 0 7H8"/></svg>
     </button>
-    <button class="primary" id="btn-export">HTML書き出し</button>
+    <button class="txtbtn" id="btn-save" title="このブラウザに途中保存（localStorage）。配るときはHTML書き出しを使ってください">保存</button>
+    <span class="save-meta" id="save-meta" aria-live="polite"></span>
+    <div class="export-wrap">
+      <button class="primary" id="btn-export" title="書き出し形式を選ぶ" aria-haspopup="true" aria-expanded="false">書き出し</button>
+      <div class="exmenu" id="exmenu" role="menu">
+        <button type="button" data-ex="html" role="menuitem">HTML 1枚<span class="ex-sub">メール添付・そのまま配布向き</span></button>
+        <button type="button" data-ex="zip" role="menuitem">ZIP（HTML+static）<span class="ex-sub">静的ホストに上げやすい形</span></button>
+        <button type="button" data-ex="pdf" role="menuitem">PDF<span class="ex-sub">印刷ダイアログ → PDFに保存</span></button>
+        <button type="button" data-ex="png" role="menuitem">PNG 一枚絵<span class="ex-sub">ページ全体の静止画</span></button>
+        <button type="button" data-ex="webm" role="menuitem">WebM 短尺<span class="ex-sub">一枚絵を短い動画に</span></button>
+        <button type="button" data-ex="flip" role="menuitem">スライド動画（WebM）<span class="ex-sub">ブロックをパラパラで</span></button>
+      </div>
+    </div>
   </div>
 </header>
 
@@ -714,7 +750,7 @@ body.freemode .free-wrap{display:block}
     <div class="modal-head">
       <div>
         <div class="mh-t">✦ 生成AI用プロンプト（Hatlier形式で出力させる）</div>
-        <div class="mh-d">下のプロンプトをChatGPTやClaudeなどに貼り付けると、このツール（Hatlier）と同じ構造のHTMLを作れます。書き出されたHTMLは「開く」からそのまま読み込んで編集できます。</div>
+        <div class="mh-d">下のプロンプトをChatGPTやClaudeなどに貼り付けると、Hatlierと同じブロック構造のHTMLを作れます。返ってきたHTMLは「貼る」にそのまま入れてください（```html 付きでも可）。形式が合えばブロック編集、合わなければフリー編集になります。</div>
       </div>
       <button class="modal-x" id="ai-x" title="閉じる (Esc)">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
@@ -723,6 +759,7 @@ body.freemode .free-wrap{display:block}
     <div class="modal-body"><pre class="prompt-box" id="ai-pre"></pre></div>
     <div class="modal-foot">
       <span class="mf-note">作りたい内容（テーマ・伝えたいこと）を末尾に書き足して使ってください。</span>
+      <button class="cap-btn" id="ai-paste">結果を貼って開く</button>
       <button class="copybtn" id="ai-copy">プロンプトをコピー</button>
     </div>
   </div>
@@ -758,19 +795,19 @@ body.freemode .free-wrap{display:block}
   <div class="modal">
     <div class="modal-head">
       <div>
-        <div class="mh-t">HTMLを取り込む（フリー編集）</div>
-        <div class="mh-d">生成AIが作ったHTMLなど、Hatlier形式でないHTMLもOK。コードを貼り付けるかファイルを選ぶと、このアプリ上で文字・画像・リンクを直接編集できます。レイアウトやデザインは元のまま保たれます。</div>
+        <div class="mh-t">HTMLを貼る</div>
+        <div class="mh-d">生成AIの出力や手元のHTMLをそのまま貼れます。<strong>Hatlier形式</strong>（決められたブロック構造、または書き出しデータ付き）ならブロック編集で開きます。それ以外は<strong>フリー編集</strong>（文字・画像・リンクだけ）— 多様なHTMLを無理にブロックへ変換しません。</div>
       </div>
       <button class="modal-x" id="imp-x" title="閉じる (Esc)">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
       </button>
     </div>
     <div class="modal-body">
-      <textarea id="imp-text" placeholder="&lt;!doctype html&gt; … ここにHTMLコードを貼り付け" spellcheck="false"></textarea>
+      <textarea id="imp-text" placeholder="&lt;!doctype html&gt; … または ```html 付きのまま貼ってもOK" spellcheck="false"></textarea>
       <div class="imp-actions">
         <button class="cap-btn" id="imp-file">HTMLファイルを選ぶ</button>
         <button class="cap-btn" id="imp-resume" hidden>前回のフリー編集を再開</button>
-        <button class="copybtn" id="imp-go">編集を開始</button>
+        <button class="copybtn" id="imp-go">判定して開く</button>
       </div>
     </div>
   </div>
@@ -792,6 +829,7 @@ body.freemode .free-wrap{display:block}
 const $  = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const uid = () => "b" + Math.random().toString(36).slice(2, 9);
+const HATLIER_VERSION = "0.3.0";
 const STORE_KEY = "hatlier.v1";
 const STORE_KEY_LEGACY = "atelier.v1";
 const FREE_KEY = "hatlier.free.v1";
@@ -1382,10 +1420,44 @@ function pushUndo(prev){
   syncHistoryBtns();
 }
 function save(){
-  try { localStorage.setItem(STORE_KEY, snap()); }
-  catch(e){
+  try {
+    localStorage.setItem(STORE_KEY, snap());
+    return true;
+  } catch(e){
     if (!saveWarned){ saveWarned = true; toast("内容が大きく自動保存できません — 「HTML書き出し」で保存してください"); }
+    return false;
   }
+}
+function markSaved(ok){
+  const el = $("#save-meta");
+  if (!el) return;
+  if (!ok){ el.textContent = ""; el.classList.remove("ok"); return; }
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2, "0");
+  const mm = String(now.getMinutes()).padStart(2, "0");
+  el.textContent = `${hh}:${mm} 保存済`;
+  el.classList.add("ok");
+}
+function saveExplicit(){
+  if (freeMode){
+    commitFreeEdit();
+    try {
+      localStorage.setItem(FREE_KEY, freeSerialize());
+      localStorage.setItem(MODE_KEY, "free");
+      markSaved(true);
+      toast("このブラウザに保存しました（別端末には渡りません — 配るときはHTML書き出し）");
+      return true;
+    } catch(e){
+      markSaved(false);
+      toast("保存できませんでした — 「HTML書き出し」でファイルにしてください");
+      return false;
+    }
+  }
+  const ok = save();
+  markSaved(ok);
+  if (ok) toast("このブラウザに保存しました（別端末には渡りません — 配るときはHTML書き出し）");
+  else toast("保存できませんでした — 「HTML書き出し」でファイルにしてください");
+  return ok;
 }
 function lsGet(primary, legacy){
   try {
@@ -2264,8 +2336,19 @@ $("#themes").addEventListener("click", e => {
 });
 
 /* ---- 書き出し・読み込み・新規 ---- */
-function exportHTML(){
-  if (freeMode) return exportFree();
+function downloadBlob(blob, filename){
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+function safeFilename(name, fallback){
+  return String(name || fallback || "document").replace(/[\\/:*?"<>|]/g, "_").trim().slice(0, 60) || fallback || "document";
+}
+
+/* ブロック文書 → 配布用HTML（1枚） */
+function buildBlocksHTML(){
   const css = $("#doc-style").textContent;
   const body = doc.blocks.map(b => REG[b.type].render(b.props, true)).join("\n");
   const title = (doc.blocks.find(b => b.type === "hero")?.props.title || "document").replace(/\s+/g, " ").trim().slice(0, 60);
@@ -2275,6 +2358,7 @@ function exportHTML(){
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="Hatlier ${HATLIER_VERSION}">
 <title>${esc(title)}</title>
 <style>
 html,body{margin:0;padding:0}
@@ -2289,14 +2373,418 @@ ${body}
 <script type="application/json" id="hatlier-doc">${json}<\/script>
 </body>
 </html>`;
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob([html], { type:"text/html" }));
-  a.download = (title || "document") + ".html";
-  a.click();
-  URL.revokeObjectURL(a.href);
+  return { html, title: safeFilename(title, "document") };
+}
+
+function exportHTML(){
+  if (freeMode) return exportFree();
+  const { html, title } = buildBlocksHTML();
+  downloadBlob(new Blob([html], { type:"text/html" }), title + ".html");
   toast("HTMLを書き出しました — そのまま配布・再編集できます");
 }
-$("#btn-export").addEventListener("click", exportHTML);
+
+/* ---- 簡易ZIP（STOREのみ・外部ライブラリなし） ---- */
+const CRC_TABLE = (() => {
+  const t = new Uint32Array(256);
+  for (let n = 0; n < 256; n++){
+    let c = n;
+    for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    t[n] = c >>> 0;
+  }
+  return t;
+})();
+function crc32Bytes(u8){
+  let c = 0xFFFFFFFF;
+  for (let i = 0; i < u8.length; i++) c = CRC_TABLE[(c ^ u8[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+function u16(n){ return new Uint8Array([n & 255, (n >>> 8) & 255]); }
+function u32(n){ return new Uint8Array([n & 255, (n >>> 8) & 255, (n >>> 16) & 255, (n >>> 24) & 255]); }
+function concatBytes(parts){
+  const len = parts.reduce((s, p) => s + p.length, 0);
+  const out = new Uint8Array(len);
+  let o = 0;
+  for (const p of parts){ out.set(p, o); o += p.length; }
+  return out;
+}
+function zipEncodeName(name){
+  return new TextEncoder().encode(name);
+}
+function buildZip(files){
+  const locals = [];
+  const centrals = [];
+  let offset = 0;
+  for (const f of files){
+    const name = zipEncodeName(f.name);
+    const data = f.data instanceof Uint8Array ? f.data : new TextEncoder().encode(String(f.data));
+    const crc = crc32Bytes(data);
+    const local = concatBytes([
+      u32(0x04034b50), u16(20), u16(0x0800), u16(0), u16(0), u16(0),
+      u32(crc), u32(data.length), u32(data.length), u16(name.length), u16(0),
+      name, data
+    ]);
+    const central = concatBytes([
+      u32(0x02014b50), u16(20), u16(20), u16(0x0800), u16(0), u16(0), u16(0),
+      u32(crc), u32(data.length), u32(data.length), u16(name.length), u16(0), u16(0),
+      u16(0), u16(0), u32(0), u32(offset), name
+    ]);
+    locals.push(local);
+    centrals.push(central);
+    offset += local.length;
+  }
+  const centralDir = concatBytes(centrals);
+  const end = concatBytes([
+    u32(0x06054b50), u16(0), u16(0), u16(files.length), u16(files.length),
+    u32(centralDir.length), u32(offset), u16(0)
+  ]);
+  return new Blob([concatBytes([...locals, centralDir, end])], { type:"application/zip" });
+}
+
+function extFromMime(mime){
+  if (/png/i.test(mime)) return "png";
+  if (/jpe?g/i.test(mime)) return "jpg";
+  if (/gif/i.test(mime)) return "gif";
+  if (/webp/i.test(mime)) return "webp";
+  if (/svg/i.test(mime)) return "svg";
+  if (/pdf/i.test(mime)) return "pdf";
+  if (/mp4/i.test(mime)) return "mp4";
+  if (/webm/i.test(mime)) return "webm";
+  return "bin";
+}
+function dataUriToBytes(uri){
+  const m = String(uri).match(/^data:([^;,]+)?(?:;charset=[^;,]+)?(;base64)?,(.*)$/i);
+  if (!m) return null;
+  const mime = m[1] || "application/octet-stream";
+  const b64 = !!m[2];
+  const data = m[3] || "";
+  try {
+    if (b64){
+      const bin = atob(data);
+      const u8 = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+      return { mime, bytes: u8 };
+    }
+    return { mime, bytes: new TextEncoder().encode(decodeURIComponent(data)) };
+  } catch { return null; }
+}
+
+/* 1枚HTML → ZIP用ファイル群（CSS分離・data URIを assets/ へ） */
+function htmlToStaticFiles(html, baseName){
+  const files = [];
+  let assetN = 0;
+  let out = html;
+
+  const styleRe = /<style[^>]*>([\s\S]*?)<\/style>/i;
+  const sm = out.match(styleRe);
+  if (sm){
+    files.push({ name:"style.css", data: sm[1].trim() + "\n" });
+    out = out.replace(styleRe, '<link rel="stylesheet" href="style.css">');
+  }
+
+  out = out.replace(/\bsrc=(["'])(data:[^"']+)\1/gi, (all, q, uri) => {
+    const parsed = dataUriToBytes(uri);
+    if (!parsed) return all;
+    assetN++;
+    const name = `assets/file-${assetN}.${extFromMime(parsed.mime)}`;
+    files.push({ name, data: parsed.bytes });
+    return `src=${q}${name}${q}`;
+  });
+  out = out.replace(/\bhref=(["'])(data:[^"']+)\1/gi, (all, q, uri) => {
+    const parsed = dataUriToBytes(uri);
+    if (!parsed) return all;
+    assetN++;
+    const name = `assets/file-${assetN}.${extFromMime(parsed.mime)}`;
+    files.push({ name, data: parsed.bytes });
+    return `href=${q}${name}${q}`;
+  });
+
+  if (!/name="generator"/i.test(out)){
+    out = out.replace(/<head([^>]*)>/i, `<head$1>\n<meta name="generator" content="Hatlier ${HATLIER_VERSION}">`);
+  }
+  files.unshift({ name: `${baseName}.html`, data: out });
+  return files;
+}
+
+function exportZip(){
+  try {
+    const { html, title } = getExportPayload();
+    const files = htmlToStaticFiles(html, title);
+    downloadBlob(buildZip(files), title + ".zip");
+    toast(`ZIPを書き出しました（${files.length}ファイル）— 静的ホスト向け`);
+  } catch(e){
+    console.error(e);
+    toast("ZIPの書き出しに失敗しました");
+  }
+}
+
+function getExportPayload(){
+  if (freeMode){
+    commitFreeEdit();
+    let html = freeSerialize();
+    if (!/name="generator"/i.test(html)){
+      html = html.replace(/<head([^>]*)>/i, `<head$1>\n<meta name="generator" content="Hatlier ${HATLIER_VERSION}">`);
+    }
+    const title = safeFilename(((fdoc() && fdoc().title) || "document"), "document");
+    return { html, title };
+  }
+  return buildBlocksHTML();
+}
+
+function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+function waitDocImages(idoc){
+  const imgs = [...idoc.images];
+  return Promise.all(imgs.map(img => {
+    if (img.complete) return null;
+    return new Promise(res => { img.onload = img.onerror = () => res(); });
+  }));
+}
+
+function loadExportFrame(html, width){
+  return new Promise((resolve, reject) => {
+    const iframe = document.createElement("iframe");
+    iframe.setAttribute("sandbox", "allow-same-origin");
+    iframe.style.cssText = `position:fixed;left:-14000px;top:0;width:${width}px;height:900px;border:0;opacity:0;pointer-events:none`;
+    document.body.appendChild(iframe);
+    const t = setTimeout(() => reject(new Error("書き出し用プレビューの読み込みがタイムアウトしました")), 20000);
+    iframe.onload = async () => {
+      clearTimeout(t);
+      try {
+        const idoc = iframe.contentDocument;
+        if (!idoc) throw new Error("プレビューを開けませんでした");
+        await waitDocImages(idoc);
+        await sleep(40);
+        const root = idoc.querySelector(".page") || idoc.body;
+        resolve({ iframe, idoc, root });
+      } catch(e){ reject(e); }
+    };
+    iframe.srcdoc = html;
+  });
+}
+
+/* SVG foreignObject 経由で同一オリジン文書をラスタライズ（外部ライブラリなし） */
+async function htmlToCanvas(html, { width = 800, scale = 2 } = {}){
+  const { iframe, idoc, root } = await loadExportFrame(html, width);
+  try {
+    const w = width;
+    let h = Math.max(root.scrollHeight, idoc.body.scrollHeight, root.offsetHeight, 1);
+    iframe.style.height = Math.min(h + 40, 16000) + "px";
+    await sleep(30);
+    h = Math.max(root.scrollHeight, idoc.body.scrollHeight, root.offsetHeight, 1);
+    const maxPx = 8192;
+    let s = scale;
+    if (h * s > maxPx) s = maxPx / h;
+    if (w * s > maxPx) s = Math.min(s, maxPx / w);
+
+    let css = "html,body{margin:0;padding:0;}";
+    idoc.querySelectorAll("style").forEach(st => { css += st.textContent; });
+    const bg = (idoc.defaultView && getComputedStyle(idoc.body).backgroundColor) || "#ffffff";
+    const bodyAttrs = [...idoc.body.attributes].map(a => `${a.name}="${esc(a.value)}"`).join(" ");
+    const inner = idoc.body.innerHTML;
+    const xhtml = `<div xmlns="http://www.w3.org/1999/xhtml" ${bodyAttrs} style="width:${w}px;margin:0;background:${bg}">` +
+      `<style>${css.replace(/<\/style>/gi, "")}</style>${inner}</div>`;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">` +
+      `<foreignObject width="100%" height="100%">${xhtml}</foreignObject></svg>`;
+    const url = URL.createObjectURL(new Blob([svg], { type:"image/svg+xml;charset=utf-8" }));
+    try {
+      const img = new Image();
+      img.decoding = "sync";
+      await new Promise((res, rej) => { img.onload = () => res(); img.onerror = () => rej(new Error("画像化に失敗しました")); img.src = url; });
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.ceil(w * s));
+      canvas.height = Math.max(1, Math.ceil(h * s));
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(s, 0, 0, s, 0, 0);
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, w, h);
+      ctx.drawImage(img, 0, 0);
+      return { canvas, width: w, height: h, scale: s, bg };
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  } finally {
+    iframe.remove();
+  }
+}
+
+function exportPDF(){
+  const { html, title } = getExportPayload();
+  const w = window.open("", "_blank");
+  if (!w){ toast("ポップアップがブロックされました — 許可してから再度お試しください"); return; }
+  const printCss = `<style>@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}@page{margin:12mm}}</style>`;
+  const boot = `<script>window.onload=function(){setTimeout(function(){try{window.focus();window.print()}catch(e){}},250)}<\/script>`;
+  w.document.open();
+  w.document.write(html.replace(/<\/head>/i, printCss + "</head>") + boot);
+  w.document.close();
+  toast(`「${title}」— 印刷ダイアログで「PDFに保存」を選んでください`);
+}
+
+async function exportPNG(){
+  toast("PNGを生成しています…");
+  try {
+    const { html, title } = getExportPayload();
+    const { canvas } = await htmlToCanvas(html, { width: 960, scale: 2 });
+    await new Promise((res, rej) => {
+      canvas.toBlob(blob => {
+        if (!blob) return rej(new Error("PNGの生成に失敗しました"));
+        downloadBlob(blob, title + ".png");
+        res();
+      }, "image/png");
+    });
+    toast("PNGを書き出しました");
+  } catch(e){
+    console.error(e);
+    toast(e.message || "PNGの書き出しに失敗しました");
+  }
+}
+
+function pickRecorderMime(){
+  if (typeof MediaRecorder === "undefined") return "";
+  const cands = [
+    "video/webm;codecs=vp9,opus",
+    "video/webm;codecs=vp8,opus",
+    "video/webm",
+    "video/mp4"
+  ];
+  return cands.find(t => MediaRecorder.isTypeSupported(t)) || "";
+}
+
+async function recordCanvasWebm(canvas, { ms = 2000, fps = 30 } = {}){
+  const mime = pickRecorderMime();
+  if (!mime) throw new Error("このブラウザでは動画書き出しに対応していません");
+  const stream = canvas.captureStream(fps);
+  const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 2500000 });
+  const chunks = [];
+  rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+  const stopped = new Promise(r => { rec.onstop = r; });
+  rec.start();
+  await sleep(ms);
+  rec.stop();
+  await stopped;
+  stream.getTracks().forEach(t => t.stop());
+  const ext = mime.includes("mp4") ? "mp4" : "webm";
+  return { blob: new Blob(chunks, { type: mime.split(";")[0] }), ext };
+}
+
+async function exportWebmStill(){
+  toast("WebMを生成しています…");
+  try {
+    const { html, title } = getExportPayload();
+    const { canvas } = await htmlToCanvas(html, { width: 960, scale: 1.25 });
+    const { blob, ext } = await recordCanvasWebm(canvas, { ms: 2200, fps: 30 });
+    downloadBlob(blob, title + "." + ext);
+    toast(`${ext.toUpperCase()}を書き出しました（静止画の短尺）`);
+  } catch(e){
+    console.error(e);
+    toast(e.message || "動画の書き出しに失敗しました");
+  }
+}
+
+function buildSlideHTML(block){
+  const css = $("#doc-style").textContent;
+  const body = REG[block.type].render(block.props, true);
+  return `<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+html,body{margin:0;padding:0;height:100%}
+.doc{min-height:100%;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:28px 36px}
+.doc .page{width:100%;max-width:880px}
+${css}
+</style></head>
+<body class="doc" data-theme="${doc.theme}" data-bg="${doc.bg}" data-font="${doc.font}">
+<main class="page">${body}</main>
+</body></html>`;
+}
+
+async function exportFlipWebm(){
+  if (freeMode){
+    toast("スライド動画はブロック編集向けです — フリー編集では PNG / WebM 短尺を使ってください");
+    return;
+  }
+  if (!doc.blocks.length){ toast("ブロックがありません"); return; }
+  const mime = pickRecorderMime();
+  if (!mime){ toast("このブラウザでは動画書き出しに対応していません"); return; }
+
+  toast(`スライド動画を生成中…（${doc.blocks.length}枚）`);
+  const W = 960, H = 540;
+  const canvas = document.createElement("canvas");
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext("2d");
+  const stream = canvas.captureStream(30);
+  const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 3200000 });
+  const chunks = [];
+  rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+  const stopped = new Promise(r => { rec.onstop = r; });
+  rec.start();
+
+  try {
+    for (let i = 0; i < doc.blocks.length; i++){
+      const slideHtml = buildSlideHTML(doc.blocks[i]);
+      const { canvas: slide, bg } = await htmlToCanvas(slideHtml, { width: W, scale: 1 });
+      ctx.fillStyle = bg || "#111";
+      ctx.fillRect(0, 0, W, H);
+      const scale = Math.min(W / slide.width, H / slide.height);
+      const dw = slide.width * scale, dh = slide.height * scale;
+      ctx.drawImage(slide, (W - dw) / 2, (H - dh) / 2, dw, dh);
+      // 枚数インジケータ
+      ctx.fillStyle = "rgba(0,0,0,.45)";
+      ctx.fillRect(W - 86, H - 36, 74, 24);
+      ctx.fillStyle = "#fff";
+      ctx.font = "600 13px system-ui,sans-serif";
+      ctx.fillText(`${i + 1}/${doc.blocks.length}`, W - 74, H - 19);
+      await sleep(1400);
+    }
+  } catch(e){
+    rec.stop();
+    stream.getTracks().forEach(t => t.stop());
+    console.error(e);
+    toast(e.message || "スライド動画の生成に失敗しました");
+    return;
+  }
+
+  rec.stop();
+  await stopped;
+  stream.getTracks().forEach(t => t.stop());
+  const ext = mime.includes("mp4") ? "mp4" : "webm";
+  const title = safeFilename((doc.blocks.find(b => b.type === "hero")?.props.title || "slides"), "slides");
+  downloadBlob(new Blob(chunks, { type: mime.split(";")[0] }), title + "-slides." + ext);
+  toast(`スライド動画（${ext.toUpperCase()}）を書き出しました`);
+}
+
+const exMenu = $("#exmenu");
+const btnExport = $("#btn-export");
+function closeExportMenu(){
+  exMenu.classList.remove("open");
+  btnExport.setAttribute("aria-expanded", "false");
+}
+function toggleExportMenu(){
+  const open = !exMenu.classList.contains("open");
+  exMenu.classList.toggle("open", open);
+  btnExport.setAttribute("aria-expanded", open ? "true" : "false");
+}
+btnExport.addEventListener("click", e => {
+  e.stopPropagation();
+  toggleExportMenu();
+});
+exMenu.addEventListener("click", e => {
+  const b = e.target.closest("[data-ex]");
+  if (!b || b.disabled) return;
+  closeExportMenu();
+  const kind = b.dataset.ex;
+  if (kind === "html") exportHTML();
+  else if (kind === "zip") exportZip();
+  else if (kind === "pdf") exportPDF();
+  else if (kind === "png") exportPNG();
+  else if (kind === "webm") exportWebmStill();
+  else if (kind === "flip") exportFlipWebm();
+});
+document.addEventListener("click", e => {
+  if (!e.target.closest(".export-wrap")) closeExportMenu();
+});
+window.addEventListener("keydown", e => {
+  if (e.key === "Escape") closeExportMenu();
+});
 
 /* ---- 既存HTMLの取り込み（Hatlier形式のDOMをブロックに復元） ---- */
 const CLASS2TYPE = {
@@ -2385,26 +2873,69 @@ function parseDom(text){
   };
 }
 
+/* AIが ```html ... ``` で包んで返すことがあるので外す（無理な構造変換はしない） */
+function unwrapHtmlFence(text){
+  let t = String(text || "").trim();
+  if (!t) return "";
+  const whole = t.match(/^```(?:html|HTML)?\s*\r?\n([\s\S]*?)\r?\n```\s*$/);
+  if (whole) return whole[1].trim();
+  if (/^```(?:html|HTML)?\s*\r?\n/.test(t) && /```\s*$/.test(t)){
+    return t.replace(/^```(?:html|HTML)?\s*\r?\n/, "").replace(/\r?\n```\s*$/, "").trim();
+  }
+  return t;
+}
+
+function parseHatlierJson(text){
+  const m = String(text).match(/<script[^>]*id="(?:hatlier-doc|atelier-doc)"[^>]*>([\s\S]*?)<\/script>/);
+  if (!m) return null;
+  try {
+    const j = JSON.parse(m[1]);
+    if (j && Array.isArray(j.blocks)) return j;
+  } catch {}
+  return null;
+}
+
+/* 厳密判定のみ。曖昧なHTML→ブロック推測はしない（多様性はフリー編集で受ける） */
+function classifyHTML(text){
+  const t = unwrapHtmlFence(text);
+  if (!t) return { kind:"empty" };
+  const fromJson = parseHatlierJson(t);
+  if (fromJson) return { kind:"blocks", how:"json", doc: fromJson, html: t };
+  const fromDom = parseDom(t);
+  if (fromDom) return { kind:"blocks", how:"dom", doc: fromDom, html: t };
+  return { kind:"free", how:"free", html: t };
+}
+
+function ingestHTML(text, opts){
+  const c = classifyHTML(text);
+  if (c.kind === "empty"){
+    toast("HTMLが空です");
+    return false;
+  }
+  if (c.kind === "blocks"){
+    pushUndo(snap());
+    doc = migrate(c.doc);
+    save();
+    setMode(false);
+    flipRender();
+    if (!opts || !opts.quiet){
+      toast(c.how === "json"
+        ? "Hatlier形式として開きました（ブロック編集）"
+        : "ブロック構造を検出して開きました（ブロック編集）");
+    }
+    return true;
+  }
+  enterFree(c.html, (opts && opts.freeMsg) ||
+    "Hatlier形式ではないため、フリー編集で開きました — 文字・画像・リンクを直せます。ブロックで触りたい場合は ✦ プロンプトで作り直してください");
+  return true;
+}
+
 $("#btn-open").addEventListener("click", () => $("#file-in").click());
 $("#file-in").addEventListener("change", async e => {
   const f = e.target.files[0];
   e.target.value = "";
   if (!f) return;
-  const text = await f.text();
-  let d = null, fromJson = false;
-  const m = text.match(/<script[^>]*id="(?:hatlier-doc|atelier-doc)"[^>]*>([\s\S]*?)<\/script>/);
-  if (m){
-    try { const j = JSON.parse(m[1]); if (j && Array.isArray(j.blocks)){ d = j; fromJson = true; } } catch {}
-  }
-  if (!d) d = parseDom(text);           // 編集データが無ければDOMから復元
-  if (!d){
-    // Hatlier形式でなければフリー編集モードで受け入れる
-    enterFree(text, "Hatlier形式ではないため、フリー編集モードで開きました — 文字・画像・リンクを直接編集できます");
-    return;
-  }
-  pushUndo(snap());
-  doc = migrate(d); save(); flipRender();
-  toast(fromJson ? "読み込みました" : "HTMLを解析して取り込みました");
+  ingestHTML(await f.text());
 });
 
 /* ---- テンプレートギャラリー ---- */
@@ -2538,6 +3069,11 @@ $("#ai-copy").addEventListener("click", async () => {
     s.removeAllRanges();
   }
 });
+$("#ai-paste").addEventListener("click", () => {
+  closeAI();
+  openImport();
+  requestAnimationFrame(() => { try { $("#imp-text").focus(); } catch {} });
+});
 window.addEventListener("keydown", e => {
   if (e.key !== "Escape") return;
   if (aiMask.classList.contains("open")) closeAI();
@@ -2547,11 +3083,17 @@ window.addEventListener("keydown", e => {
 /* ---- キーボード ---- */
 $("#btn-undo").addEventListener("click", undo);
 $("#btn-redo").addEventListener("click", redo);
+$("#btn-save").addEventListener("click", saveExplicit);
 
 window.addEventListener("keydown", e => {
   const meta = e.metaKey || e.ctrlKey;
   if (e.key === "Escape" && capMask.classList.contains("open")){ closeCapture(); return; }
   const editing = document.activeElement && document.activeElement.matches && document.activeElement.matches("[data-edit]");
+  if (meta && e.key.toLowerCase() === "s"){
+    e.preventDefault();
+    saveExplicit();
+    return;
+  }
   if (meta && e.key.toLowerCase() === "z"){
     if (editing) return;               // テキスト中はブラウザのundoに任せる
     e.preventDefault();
@@ -2605,8 +3147,10 @@ function freeSave(){
   try {
     localStorage.setItem(FREE_KEY, freeSerialize());
     localStorage.setItem(MODE_KEY, "free");
+    return true;
   } catch(e){
     if (!freeSaveWarned){ freeSaveWarned = true; toast("内容が大きく自動保存できません — 「HTML書き出し」で保存してください"); }
+    return false;
   }
 }
 function freeLoadRaw(){ return lsGet(FREE_KEY, FREE_KEY_LEGACY); }
@@ -2799,13 +3343,12 @@ document.addEventListener("click", e => {
 /* ---- フリー編集の書き出し ---- */
 function exportFree(){
   commitFreeEdit();
-  const html = freeSerialize();
-  const t = ((fdoc() && fdoc().title) || "document").trim().slice(0, 60) || "document";
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob([html], { type:"text/html" }));
-  a.download = t.replace(/[\\/:*?"<>|]/g, "_") + ".html";
-  a.click();
-  URL.revokeObjectURL(a.href);
+  let html = freeSerialize();
+  if (!/name="generator"/i.test(html)){
+    html = html.replace(/<head([^>]*)>/i, `<head$1>\n<meta name="generator" content="Hatlier ${HATLIER_VERSION}">`);
+  }
+  const t = safeFilename(((fdoc() && fdoc().title) || "document"), "document");
+  downloadBlob(new Blob([html], { type:"text/html" }), t + ".html");
   toast("HTMLを書き出しました");
 }
 
@@ -2826,20 +3369,19 @@ $("#btn-import").addEventListener("click", openImport);
 $("#imp-x").addEventListener("click", closeImport);
 impMask.addEventListener("click", e => { if (e.target === impMask) closeImport(); });
 $("#imp-go").addEventListener("click", () => {
-  const text = $("#imp-text").value.trim();
-  if (!text){ toast("HTMLコードを貼り付けるか、ファイルを選んでください"); return; }
+  const text = $("#imp-text").value;
+  if (!String(text || "").trim()){ toast("HTMLコードを貼り付けるか、ファイルを選んでください"); return; }
   $("#imp-text").value = "";
   closeImport();
-  enterFree(text, "取り込みました — 文字・画像・リンクをクリックして編集できます");
+  ingestHTML(text);
 });
 $("#imp-file").addEventListener("click", () => $("#free-file-in").click());
 $("#free-file-in").addEventListener("change", async e => {
   const f = e.target.files[0];
   e.target.value = "";
   if (!f) return;
-  const text = await f.text();
   closeImport();
-  enterFree(text, "取り込みました — 文字・画像・リンクをクリックして編集できます");
+  ingestHTML(await f.text());
 });
 $("#imp-resume").addEventListener("click", () => {
   const html = freeLoadRaw();
@@ -2855,7 +3397,7 @@ window.addEventListener("keydown", e => {
 $("#btn-back").addEventListener("click", () => {
   commitFreeEdit();
   setMode(false);
-  toast("ブロック編集に戻りました — 「取り込む」からいつでも再開できます");
+  toast("ブロック編集に戻りました — 「貼る」からいつでも再開できます");
 });
 
 /* ---- トースト ---- */
@@ -2869,6 +3411,10 @@ function toast(msg){
 }
 
 /* ---- 起動 ---- */
+try {
+  const ver = $("#app-ver");
+  if (ver){ ver.textContent = "v" + HATLIER_VERSION; }
+} catch {}
 render();
 syncHistoryBtns();
 
