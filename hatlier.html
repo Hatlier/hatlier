@@ -348,6 +348,12 @@ button{font-family:inherit;border:none;background:none;cursor:pointer;color:inhe
 .exmenu button:disabled{opacity:.45;cursor:default}
 .exmenu button:disabled:hover{background:none}
 .exmenu .ex-sub{display:block;margin-top:2px;font-size:10.5px;color:#8A8A93;font-weight:500}
+.saveas-row{display:flex;align-items:center;gap:0;border:1px solid rgba(20,20,30,.14);border-radius:10px;overflow:hidden;background:#fff}
+.saveas-row input{
+  flex:1;border:none;outline:none;padding:12px 14px;font-size:13.5px;font-family:inherit;color:#1B1B20;min-width:0;
+}
+.saveas-ext{padding:12px 14px;font-size:13px;font-weight:600;color:#6B6B74;background:rgba(20,20,30,.04);border-left:1px solid rgba(20,20,30,.1);white-space:nowrap}
+.saveas-hint{margin-top:10px;font-size:11.5px;color:#8A8A93;line-height:1.7}
 .icobtn{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;color:#55555E;transition:background .15s,color .15s,opacity .15s}
 .icobtn:hover{background:rgba(20,20,30,.07);color:#1B1B20}
 .icobtn:disabled{opacity:.28;pointer-events:none}
@@ -670,7 +676,7 @@ body.freemode .free-wrap{display:block}
 <header class="topbar">
   <div class="brand">
     <span class="dot"></span>Hatlier
-    <a class="ver" id="app-ver" href="https://github.com/Hatlier/hatlier/blob/main/ROADMAP.md" target="_blank" rel="noopener" title="バージョンと開発予定（ROADMAP）">v0.3.1</a>
+    <a class="ver" id="app-ver" href="https://github.com/Hatlier/hatlier/blob/main/ROADMAP.md" target="_blank" rel="noopener" title="バージョンと開発予定（ROADMAP）">v0.3.2</a>
   </div>
   <button class="txtbtn" id="btn-new">新規</button>
   <button class="txtbtn" id="btn-open" title="Hatlierで書き出したHTML、またはHatlier形式のHTMLを読み込んで編集">開く</button>
@@ -813,6 +819,31 @@ body.freemode .free-wrap{display:block}
   </div>
 </div>
 
+<div class="modal-mask" id="saveas-mask">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <div class="mh-t">ファイル名を確認</div>
+        <div class="mh-d">デフォルトは日時＋タイトルです。書き出し前に好きな名前へ直せます。</div>
+      </div>
+      <button class="modal-x" id="saveas-x" title="閉じる (Esc)">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="saveas-row">
+        <input id="saveas-in" type="text" spellcheck="false" autocomplete="off">
+        <span class="saveas-ext" id="saveas-ext">.html</span>
+      </div>
+      <p class="saveas-hint">例: <code>202607221130.紹介ページ</code> → 拡張子は形式に合わせて自動で付きます。</p>
+    </div>
+    <div class="modal-foot">
+      <button class="cap-btn" id="saveas-cancel">キャンセル</button>
+      <button class="copybtn" id="saveas-go">この名前で書き出し</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 <input type="file" id="file-in" accept=".html,.htm" hidden>
 <input type="file" id="media-in" hidden>
@@ -829,7 +860,7 @@ body.freemode .free-wrap{display:block}
 const $  = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const uid = () => "b" + Math.random().toString(36).slice(2, 9);
-const HATLIER_VERSION = "0.3.1";
+const HATLIER_VERSION = "0.3.2";
 const STORE_KEY = "hatlier.v1";
 const STORE_KEY_LEGACY = "atelier.v1";
 const FREE_KEY = "hatlier.free.v1";
@@ -2344,7 +2375,67 @@ function downloadBlob(blob, filename){
   URL.revokeObjectURL(a.href);
 }
 function safeFilename(name, fallback){
-  return String(name || fallback || "document").replace(/[\\/:*?"<>|]/g, "_").trim().slice(0, 60) || fallback || "document";
+  return String(name || fallback || "document").replace(/[\\/:*?"<>|]/g, "_").trim().slice(0, 80) || fallback || "document";
+}
+function timestampPrefix(){
+  const d = new Date();
+  const p = n => String(n).padStart(2, "0");
+  return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}${p(d.getHours())}${p(d.getMinutes())}`;
+}
+/* デフォ名: YYYYMMDDhhmm.タイトル */
+function defaultExportStem(title){
+  return `${timestampPrefix()}.${safeFilename(title, "document")}`;
+}
+
+let saveAsResolver = null;
+const saveAsMask = $("#saveas-mask");
+function closeSaveAs(result){
+  if (!saveAsMask.classList.contains("open")) return;
+  saveAsMask.classList.remove("vis");
+  setTimeout(() => saveAsMask.classList.remove("open"), 200);
+  const r = saveAsResolver;
+  saveAsResolver = null;
+  if (r) r(result);
+}
+function askSaveFilename(stem, ext){
+  return new Promise(resolve => {
+    saveAsResolver = resolve;
+    $("#saveas-ext").textContent = "." + ext;
+    $("#saveas-in").value = stem;
+    saveAsMask.classList.add("open");
+    requestAnimationFrame(() => {
+      saveAsMask.classList.add("vis");
+      const inp = $("#saveas-in");
+      inp.focus();
+      inp.select();
+    });
+  });
+}
+function finishSaveAs(){
+  const ext = ($("#saveas-ext").textContent || "").replace(/^\./, "") || "dat";
+  let stem = $("#saveas-in").value.trim();
+  const re = new RegExp("\\." + ext.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "$", "i");
+  stem = stem.replace(re, "");
+  stem = safeFilename(stem, "document");
+  closeSaveAs(stem + "." + ext);
+}
+$("#saveas-go").addEventListener("click", finishSaveAs);
+$("#saveas-cancel").addEventListener("click", () => closeSaveAs(null));
+$("#saveas-x").addEventListener("click", () => closeSaveAs(null));
+saveAsMask.addEventListener("click", e => { if (e.target === saveAsMask) closeSaveAs(null); });
+$("#saveas-in").addEventListener("keydown", e => {
+  if (e.key === "Enter"){ e.preventDefault(); finishSaveAs(); }
+  if (e.key === "Escape"){ e.preventDefault(); closeSaveAs(null); }
+});
+
+async function downloadBlobAs(blob, titleOrStem, ext){
+  const stem = String(titleOrStem || "").includes(".") && /^\d{12}\./.test(titleOrStem)
+    ? titleOrStem
+    : defaultExportStem(titleOrStem);
+  const name = await askSaveFilename(stem, ext);
+  if (!name) return null;
+  downloadBlob(blob, name);
+  return name;
 }
 
 /* ブロック文書 → 配布用HTML（1枚） */
@@ -2379,8 +2470,9 @@ ${body}
 function exportHTML(){
   if (freeMode) return exportFree();
   const { html, title } = buildBlocksHTML();
-  downloadBlob(new Blob([html], { type:"text/html" }), title + ".html");
-  toast("HTMLを書き出しました — そのまま配布・再編集できます");
+  downloadBlobAs(new Blob([html], { type:"text/html" }), title, "html").then(name => {
+    if (name) toast("HTMLを書き出しました — そのまま配布・再編集できます");
+  });
 }
 
 /* ---- 簡易ZIP（STOREのみ・外部ライブラリなし） ---- */
@@ -2506,15 +2598,20 @@ function htmlToStaticFiles(html, baseName){
 }
 
 function exportZip(){
-  try {
-    const { html, title } = getExportPayload();
-    const files = htmlToStaticFiles(html, title);
-    downloadBlob(buildZip(files), title + ".zip");
-    toast(`ZIPを書き出しました（${files.length}ファイル）— 静的ホスト向け`);
-  } catch(e){
-    console.error(e);
-    toast("ZIPの書き出しに失敗しました");
-  }
+  (async () => {
+    try {
+      const { html, title } = getExportPayload();
+      const full = await askSaveFilename(defaultExportStem(title), "zip");
+      if (!full) return;
+      const base = safeFilename(full.replace(/\.zip$/i, ""), "document");
+      const files = htmlToStaticFiles(html, base);
+      downloadBlob(buildZip(files), full);
+      toast(`ZIPを書き出しました（${files.length}ファイル）— 静的ホスト向け`);
+    } catch(e){
+      console.error(e);
+      toast("ZIPの書き出しに失敗しました");
+    }
+  })();
 }
 
 function getExportPayload(){
@@ -2699,14 +2796,11 @@ async function exportPNG(){
   try {
     const { html, title } = getExportPayload();
     const { canvas } = await htmlToCanvas(html, { width: 960, scale: 2 });
-    await new Promise((res, rej) => {
-      canvas.toBlob(blob => {
-        if (!blob) return rej(new Error("PNGの生成に失敗しました"));
-        downloadBlob(blob, title + ".png");
-        res();
-      }, "image/png");
+    const blob = await new Promise((res, rej) => {
+      canvas.toBlob(b => b ? res(b) : rej(new Error("PNGの生成に失敗しました")), "image/png");
     });
-    toast("PNGを書き出しました");
+    const name = await downloadBlobAs(blob, title, "png");
+    if (name) toast("PNGを書き出しました");
   } catch(e){
     console.error(e);
     toast(e.message || "PNGの書き出しに失敗しました");
@@ -2779,12 +2873,13 @@ async function exportVideoStill(){
     const { html, title } = getExportPayload();
     const { canvas } = await htmlToCanvas(html, { width: 960, scale: 1.25 });
     const { blob, ext } = await recordCanvasVideo(canvas, { ms: 2400, fps: 30 });
-    downloadBlob(blob, title + "." + ext);
+    const name = await downloadBlobAs(blob, title, ext);
+    if (!name) return;
     if (ext === "webm"){
       openBlobInBrowser(blob, "WebM");
       toast("WebMを保存＋ブラウザで開きました（Windows標準プレーヤーは非対応なことが多いです）");
     } else {
-      toast(`MP4を書き出しました`);
+      toast("MP4を書き出しました");
     }
   } catch(e){
     console.error(e);
@@ -2868,14 +2963,15 @@ async function exportFlipVideo(){
   if (!chunks.length){ toast("動画データが空でした"); return; }
   const usedMime = rec.mimeType || mime;
   const ext = extFromRecorderMime(usedMime);
-  const title = safeFilename((doc.blocks.find(b => b.type === "hero")?.props.title || "slides"), "slides");
+  const title = (doc.blocks.find(b => b.type === "hero")?.props.title || "slides");
   const blob = new Blob(chunks, { type: usedMime.split(";")[0] });
-  downloadBlob(blob, title + "-slides." + ext);
+  const name = await downloadBlobAs(blob, title + "-slides", ext);
+  if (!name) return;
   if (ext === "webm"){
     openBlobInBrowser(blob, "スライドWebM");
     toast("スライドWebMを保存＋ブラウザで開きました（標準プレーヤー非対応なことが多いです）");
   } else {
-    toast(`スライド動画（MP4）を書き出しました`);
+    toast("スライド動画（MP4）を書き出しました");
   }
 }
 
@@ -2910,7 +3006,10 @@ document.addEventListener("click", e => {
   if (!e.target.closest(".export-wrap")) closeExportMenu();
 });
 window.addEventListener("keydown", e => {
-  if (e.key === "Escape") closeExportMenu();
+  if (e.key === "Escape"){
+    if (saveAsMask.classList.contains("open")){ closeSaveAs(null); return; }
+    closeExportMenu();
+  }
 });
 
 /* ---- 既存HTMLの取り込み（Hatlier形式のDOMをブロックに復元） ---- */
@@ -3203,6 +3302,7 @@ $("#ai-paste").addEventListener("click", () => {
 });
 window.addEventListener("keydown", e => {
   if (e.key !== "Escape") return;
+  if (saveAsMask.classList.contains("open")){ closeSaveAs(null); return; }
   if (aiMask.classList.contains("open")) closeAI();
   if (tplMask.classList.contains("open")) closeTemplates();
 });
@@ -3474,9 +3574,10 @@ function exportFree(){
   if (!/name="generator"/i.test(html)){
     html = html.replace(/<head([^>]*)>/i, `<head$1>\n<meta name="generator" content="Hatlier ${HATLIER_VERSION}">`);
   }
-  const t = safeFilename(((fdoc() && fdoc().title) || "document"), "document");
-  downloadBlob(new Blob([html], { type:"text/html" }), t + ".html");
-  toast("HTMLを書き出しました");
+  const t = ((fdoc() && fdoc().title) || "document");
+  downloadBlobAs(new Blob([html], { type:"text/html" }), t, "html").then(name => {
+    if (name) toast("HTMLを書き出しました");
+  });
 }
 
 /* ---- 取り込みモーダル ---- */
