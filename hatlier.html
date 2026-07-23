@@ -272,6 +272,34 @@ a.lc:hover{box-shadow:0 10px 28px -10px rgba(0,0,0,.22);transform:translateY(-1.
 .drop svg{display:block;margin:0 auto 12px;opacity:.55}
 .drop:hover{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 4%,transparent)}
 
+/* カルーセル（CSS scroll-snap・JS不要） */
+.b-carousel{padding-top:18px;padding-bottom:18px}
+.car-hint{font-size:11px;letter-spacing:.08em;color:var(--muted);margin:0 0 10px;font-weight:600}
+.car-track{
+  display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch;scrollbar-width:thin;
+  padding:4px 2px 14px;margin:0 -2px;
+  scroll-padding-inline:2px;
+}
+.car-track::-webkit-scrollbar{height:6px}
+.car-track::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--muted) 45%,transparent);border-radius:99px}
+.car-slide{
+  flex:0 0 calc(100% - 8px);scroll-snap-align:start;scroll-snap-stop:always;
+  box-sizing:border-box;min-height:140px;
+  background:var(--surface);border:1px solid var(--line);border-radius:14px;
+  padding:28px 26px 26px;
+}
+.car-slide h3{font-family:var(--f-head);font-weight:600;font-size:20px;line-height:1.55;margin:0 0 10px}
+.car-slide p{color:var(--muted);font-size:13.5px;line-height:1.9;margin:0}
+@media(max-width:640px){
+  .car-slide{flex-basis:calc(100% - 4px);padding:22px 18px}
+}
+@media print{
+  .car-hint{display:none}
+  .car-track{display:block;overflow:visible;padding:0}
+  .car-slide{flex:none;width:100%;margin-bottom:12px;break-inside:avoid}
+}
+
 /* 締め */
 .b-closing{text-align:center;border-top:1px solid var(--line);margin-top:14px;padding-top:46px;padding-bottom:34px}
 .b-closing h2{font-family:var(--f-head);font-weight:600;font-size:24px;line-height:1.7;margin-bottom:13px}
@@ -478,7 +506,7 @@ button{font-family:inherit;border:none;background:none;cursor:pointer;color:inhe
 
 /* デザインパネル */
 .design{
-  position:fixed;z-index:100;display:none;width:352px;padding:16px 16px 14px;
+  position:fixed;z-index:100;display:none;width:380px;padding:16px 16px 14px;
   max-height:76vh;overflow:auto;
   background:#fff;border-radius:15px;border:1px solid rgba(20,20,30,.07);
   box-shadow:0 24px 70px -14px rgba(20,20,30,.35);
@@ -489,7 +517,29 @@ button{font-family:inherit;border:none;background:none;cursor:pointer;color:inhe
 .design.vis{opacity:1;transform:none}
 .dlab{font-size:11px;font-weight:700;letter-spacing:.1em;color:#8A8A94;margin:14px 2px 8px}
 .dlab:first-child{margin-top:0}
+.dhint{font-size:11px;line-height:1.45;color:#8A8A94;margin:-2px 2px 10px}
 .drow{display:flex;gap:8px;flex-wrap:wrap}
+.prow{display:flex;flex-direction:column;gap:6px}
+.popt{
+  display:block;width:100%;text-align:left;padding:10px 12px;border-radius:10px;
+  border:1px solid rgba(20,20,30,.08);background:#FAFAFB;color:#1B1B20;
+  cursor:pointer;font:inherit;transition:background .13s,border-color .13s,box-shadow .13s;
+}
+.popt:hover:not(:disabled){background:#F1F1F4}
+.popt.on{
+  border-color:#1B1B20;background:#fff;
+  box-shadow:0 0 0 1px #1B1B20;
+}
+.popt:disabled,.popt.dis{opacity:.48;cursor:not-allowed}
+.popt-top{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.popt-name{font-size:13px;font-weight:700}
+.popt-hint{
+  font-size:10px;font-weight:700;letter-spacing:.04em;
+  padding:2px 6px;border-radius:999px;background:#1B1B20;color:#fff;
+}
+.popt-hint.soon{background:#8A8A94}
+.popt-desc{display:block;font-size:11px;line-height:1.45;color:#6A6A74}
+.pal-note{font-size:11px;line-height:1.4;color:#6A6A74;padding:8px 2px 2px}
 .bgopt,.fopt{border-radius:10px;padding:6px;transition:background .13s;text-align:center}
 .bgopt:hover,.fopt:hover{background:#F1F1F4}
 .bgprev{display:block;width:62px;height:40px;border-radius:7px;border:1px solid rgba(20,20,30,.1);--u:.12px;overflow:hidden}
@@ -584,6 +634,44 @@ video#cap-live.no-mirror{transform:none}
 .tpl-nm{font-size:13px;font-weight:700;color:#1B1B20;letter-spacing:.01em}
 .tpl-desc{margin-top:3px;font-size:11.5px;color:#6B6B74;line-height:1.6}
 @media(max-width:720px){.tpl-grid{grid-template-columns:1fr 1fr}}
+.tpl-sec{margin:4px 0 10px}
+.tpl-sec-h{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+  margin:18px 2px 10px;font-size:11px;font-weight:700;letter-spacing:.1em;color:#8A8A94;
+}
+.tpl-sec-h:first-child{margin-top:0}
+.tpl-sec-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tpl-savebtn{
+  font:inherit;font-size:12px;font-weight:600;padding:6px 11px;border-radius:8px;
+  background:#1B1B20;color:#fff;border:none;cursor:pointer;
+}
+.tpl-savebtn:hover{background:#3A3A44}
+.tpl-quota{font-size:11px;color:#8A8A94;letter-spacing:.02em;font-weight:500}
+.tpl-empty{
+  grid-column:1/-1;padding:28px 16px;text-align:center;color:#8A8A94;font-size:12.5px;line-height:1.7;
+  border:1px dashed rgba(20,20,30,.12);border-radius:12px;background:#FAFAFB;
+}
+.tpl-card-wrap{position:relative}
+.tpl-del{
+  position:absolute;top:14px;right:14px;z-index:2;
+  width:28px;height:28px;border-radius:8px;font-size:14px;line-height:1;
+  background:rgba(255,255,255,.92);border:1px solid rgba(20,20,30,.1);color:#6B6B74;cursor:pointer;
+  box-shadow:0 4px 12px -6px rgba(20,20,30,.35);
+}
+.tpl-del:hover{background:#fff;color:#C0392B;border-color:rgba(192,57,43,.35)}
+.srow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:4px 2px 0}
+.srow label{font-size:12px;color:#3C3C44}
+.srow input[type="number"]{
+  width:88px;font:inherit;font-size:12.5px;padding:7px 9px;border:1px solid rgba(20,20,30,.14);
+  border-radius:8px;background:#fff;color:#1B1B20;
+}
+.srow input[type="number"]:focus{outline:none;border-color:#1B1B20;box-shadow:0 0 0 2px rgba(27,27,32,.12)}
+.sunit{font-size:11px;color:#8A8A94}
+.sbtn{
+  font:inherit;font-size:12px;font-weight:600;padding:7px 11px;border-radius:8px;
+  background:#F1F1F4;color:#1B1B20;border:none;cursor:pointer;
+}
+.sbtn:hover{background:#E7E7EC}
 
 /* ドラッグ */
 body.dragging{cursor:grabbing;user-select:none}
@@ -678,7 +766,7 @@ body.freemode .free-wrap{display:block}
 <header class="topbar">
   <div class="brand">
     <span class="dot"></span>Hatlier
-    <a class="ver" id="app-ver" href="https://github.com/Hatlier/hatlier/blob/main/ROADMAP.md" target="_blank" rel="noopener" title="バージョンと開発予定（ROADMAP）">v0.3.3</a>
+    <a class="ver" id="app-ver" href="https://github.com/Hatlier/hatlier/blob/main/ROADMAP.md" target="_blank" rel="noopener" title="バージョンと開発予定（ROADMAP）">v0.5.0</a>
   </div>
   <button class="txtbtn" id="btn-new" title="テンプレートから新しい文書を作る">新規</button>
   <button class="txtbtn" id="btn-open" title="Hatlierで書き出したHTML、またはHatlier形式のHTMLを読み込んで編集">開く</button>
@@ -744,13 +832,13 @@ body.freemode .free-wrap{display:block}
     <div class="modal-head">
       <div>
         <div class="mh-t">テンプレートから始める</div>
-        <div class="mh-d">雛形を選ぶと新しい文書になります。<strong>保存</strong>はブラウザ内、<strong>書き出し</strong>でファイルになります。いまの内容は ⌘Z で戻せます。</div>
+        <div class="mh-d">公式またはマイテンプレを選ぶと新しい文書になります。<strong>保存</strong>はブラウザ内、<strong>書き出し</strong>でファイルになります。いまの内容は ⌘Z で戻せます。</div>
       </div>
       <button class="modal-x" id="tpl-x" title="閉じる (Esc)">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
       </button>
     </div>
-    <div class="modal-body"><div class="tpl-grid" id="tpl-grid"></div></div>
+    <div class="modal-body" id="tpl-body"></div>
   </div>
 </div>
 
@@ -857,13 +945,13 @@ body.freemode .free-wrap{display:block}
 "use strict";
 /* ============================================================
    Hatlier — 単一HTMLファイルのブロックエディタ
-   状態: doc = { theme, bg, font, blocks:[{id,type,props}] } が唯一の真実。
+   状態: doc = { theme, bg, font, profile, blocks:[{id,type,props}] } が唯一の真実。
    ============================================================ */
 
 const $  = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const uid = () => "b" + Math.random().toString(36).slice(2, 9);
-const HATLIER_VERSION = "0.3.3";
+const HATLIER_VERSION = "0.5.0";
 const STORE_KEY = "hatlier.v1";
 const STORE_KEY_LEGACY = "atelier.v1";
 const FREE_KEY = "hatlier.free.v1";
@@ -872,6 +960,9 @@ const MODE_KEY = "hatlier.mode";
 const MODE_KEY_LEGACY = "atelier.mode";
 const SEEN_KEY = "hatlier.seen";
 const SEEN_KEY_LEGACY = "atelier.seen";
+const MYTPL_KEY = "hatlier.mytpl.v1";
+const SETTINGS_KEY = "hatlier.settings.v1";
+const DEFAULT_SETTINGS = { myTplMaxKB: 1500 };
 
 /* 端末カメラ・画面録画はセキュアコンテキスト（https / localhost 等）でのみ有効化。
    撮影/録画結果は画像と同じくbase64データURIとして1つのHTMLに埋め込まれる。 */
@@ -981,6 +1072,7 @@ const BLOCK_ICONS = (() => {
     video: s(`<rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M10 9.5v5l4.5-2.5z"/>`),
     pdf: s(`<path d="M6.5 3.5h7l4 4v13h-11z"/><path d="M13.5 3.5v4h4"/><path d="M9 13h6M9 16h6"/>`),
     closing: s(`<path d="M7 7.5h10"/><path d="M4.5 12.5h15"/><path d="M9 17.5h6"/>`),
+    carousel: s(`<rect x="3.5" y="6.5" width="17" height="11" rx="2"/><path d="M7 20.5h.01M12 20.5h.01M17 20.5h.01"/>`),
     _: s(`<rect x="4" y="4" width="16" height="16" rx="3"/>`),
   };
 })();
@@ -1134,6 +1226,59 @@ function stepsBg(variant, n){
        : "";
 }
 
+/* 出力プロファイル（ユーザ向け表示名必須。IDは保存用）
+   safe=JSなし / standard=軽量JS可 / rich=fetch等（準備中） */
+const PROFILES = [
+  {
+    id: "safe",
+    label: "いちばん無難",
+    hint: "推奨",
+    hintClass: "",
+    desc: "HTMLとCSSだけ（スクリプトなし）。CSPがとても厳しい公開先でも動きやすい向きです。迷ったらこれ。",
+    allowNeeds: [],
+  },
+  {
+    id: "standard",
+    label: "ややゆるめ",
+    hint: "",
+    hintClass: "",
+    desc: "ふつうの静的ホスト向け。軽い動きのある部品も使えます（いまの部品はほぼどちらでも可）。",
+    allowNeeds: ["js", "media"],
+  },
+  {
+    id: "rich",
+    label: "拡張",
+    hint: "準備中",
+    hintClass: "soon",
+    desc: "ネットワーク連携など、より自由な部品向け。まだ選べません。",
+    allowNeeds: ["js", "media", "fetch"],
+    disabled: true,
+  },
+];
+const PROFILE_ALIAS = { "safe-static":"safe", "csp-strict":"safe", "interactive":"standard" };
+function profileDef(id){ return PROFILES.find(p => p.id === id) || PROFILES[0]; }
+function normalizeProfile(id){
+  if (PROFILE_ALIAS[id]) id = PROFILE_ALIAS[id];
+  return PROFILES.some(p => p.id === id) ? id : "safe";
+}
+function profileLabel(id){ return profileDef(id).label; }
+function needsOf(type){
+  const n = REG[type] && REG[type].needs;
+  return Array.isArray(n) ? n : [];
+}
+function profileAllows(profileId, type){
+  const needs = needsOf(type);
+  if (!needs.length) return true;
+  const allow = profileDef(profileId).allowNeeds || [];
+  return needs.every(n => allow.includes(n));
+}
+function allowedBlockTypes(profileId){
+  return Object.keys(REG).filter(t => profileAllows(profileId, t));
+}
+
+/* needs: 書き出しに必要な能力。省略＝[]（HTML/CSSのみ → safe 可）
+   "js" | "media" | "fetch"
+   現状の部品はすべて safe 可（details・静的SVGグラフ・ネイティブ controls） */
 const REG = {
   hero: {
     name: "ヒーロー見出し",
@@ -1351,6 +1496,24 @@ const REG = {
       <p data-edit="t">${esc(p.t)}</p>
     </section>`
   },
+  carousel: {
+    name: "カルーセル",
+    defaults: () => ({ items:[
+      { h:"スライド 1", t:"横にスワイプ（またはスクロール）して次へ。スクリプトなしの scroll-snap で動きます。" },
+      { h:"スライド 2", t:"厳しいCSPの公開先でも動きやすい向き（いちばん無難）でも使えます。" },
+      { h:"スライド 3", t:"右上の＋/−で枚数を増減。印刷時は縦に並びます。" },
+    ]}),
+    ops: arrOps(p => p.items, () => ({ h:"新しいスライド", t:"説明をここに。" }), 2, 8, "スライドを追加", "末尾のスライドを削除"),
+    render: p => `<section class="blk b-carousel">
+      <div class="car-hint">← 横にスワイプ / スクロール →</div>
+      <div class="car-track">${(p.items || []).map((it,i)=>`
+        <div class="car-slide">
+          <h3 data-edit="items.${i}.h" data-single>${esc(it.h)}</h3>
+          <p data-edit="items.${i}.t">${esc(it.t)}</p>
+        </div>`).join("")}
+      </div>
+    </section>`
+  },
 };
 
 /* ---- 初期ドキュメント（このツール自身の説明＝チュートリアル） ---- */
@@ -1388,6 +1551,11 @@ const TEMPLATES = [
     mkb("hero", { kicker:"PRODUCT", title:"迷わず伝わる、1枚のプロダクト紹介", lede:"いちばん伝えたい価値を最初の3行で。読み手が続きを読みたくなる導入を書きましょう。" }),
     mkb("stats", { items:[ {v:"98%", l:"導入企業の継続率"}, {v:"3分", l:"はじめての設定時間"}, {v:"24/7", l:"サポート体制"} ] }),
     mkb("cols", { items:[ {h:"かんたん", t:"むずかしい設定は不要。開いてすぐに使えます。"}, {h:"はやい", t:"待たされないレスポンスで作業が止まりません。"}, {h:"安全", t:"データは手元に。外部への送信はありません。"} ] }),
+    mkb("carousel", { items:[
+      { h:"画面で見せる", t:"要点を1枚ずつ。読み手は横にスワイプするだけ。" },
+      { h:"スクリプトなし", t:"CSSの scroll-snap。厳しい公開先でも動きやすい。" },
+      { h:"あとから直せる", t:"枚数も文面も、Hatlier上でそのまま編集。" },
+    ]}),
     mkb("steps", { items:[ {h:"登録", t:"メールだけで開始。"}, {h:"設定", t:"3ステップで完了。"}, {h:"活用", t:"すぐに効果を実感。"} ] }),
     mkb("faq", { items:[ {q:"無料で試せますか？", a:"はい、14日間の無料トライアルがあります。"}, {q:"解約はいつでもできますか？", a:"いつでも可能です。違約金はありません。"} ] }),
     mkb("button", { label:"無料で試してみる", url:"https://example.com" }),
@@ -1430,6 +1598,7 @@ const TEMPLATES = [
 function migrate(d){
   d.bg = d.bg || "plain";
   d.font = d.font || "elegant";
+  d.profile = normalizeProfile(d.profile);
   d.blocks = d.blocks.map(b => {
     if (b.type === "twocol"){
       return { id:b.id, type:"cols", props:{ items:[ {h:b.props.a.h, t:b.props.a.t}, {h:b.props.b.h, t:b.props.b.t} ] } };
@@ -1439,8 +1608,121 @@ function migrate(d){
   return d;
 }
 
+function setProfile(nextId){
+  const next = normalizeProfile(nextId);
+  if (profileDef(next).disabled){
+    toast("「拡張」はまだ選べません");
+    return false;
+  }
+  if (next === doc.profile) return false;
+  const bad = doc.blocks.filter(b => !profileAllows(next, b.type));
+  if (bad.length){
+    const names = [...new Set(bad.map(b => (REG[b.type] && REG[b.type].name) || b.type))].join("、");
+    const ok = confirm(
+      `「${profileLabel(next)}」では次の部品は使えません:\n\n${names}\n\nこれらの部品を削除して切り替えますか？`
+    );
+    if (!ok) return false;
+    pushUndo(snap());
+    doc.blocks = doc.blocks.filter(b => profileAllows(next, b.type));
+    doc.profile = next;
+    save();
+    flipRender();
+    toast("向きを切り替え、使えない部品を外しました");
+    return true;
+  }
+  pushUndo(snap());
+  doc.profile = next;
+  save();
+  toast(`出力の向き: ${profileLabel(next)}`);
+  return true;
+}
+
+/* ---- ブラウザ設定・マイテンプレート（localStorage） ---- */
+function loadSettings(){
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (!raw) return { ...DEFAULT_SETTINGS };
+    const s = JSON.parse(raw);
+    const kb = Math.max(200, Math.min(20000, +s.myTplMaxKB || DEFAULT_SETTINGS.myTplMaxKB));
+    return { myTplMaxKB: kb };
+  } catch { return { ...DEFAULT_SETTINGS }; }
+}
+function saveSettings(s){
+  try {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+    return true;
+  } catch { return false; }
+}
+let settings = loadSettings();
+
+function utf8Bytes(str){
+  try { return new TextEncoder().encode(String(str)).length; }
+  catch { return String(str).length; }
+}
+function fmtKB(n){ return (Math.round((n / 1024) * 10) / 10).toLocaleString("en-US"); }
+
+function loadMyTemplates(){
+  try {
+    const raw = localStorage.getItem(MYTPL_KEY);
+    if (!raw) return [];
+    const j = JSON.parse(raw);
+    return Array.isArray(j) ? j : (Array.isArray(j.items) ? j.items : []);
+  } catch { return []; }
+}
+function persistMyTemplates(list){
+  localStorage.setItem(MYTPL_KEY, JSON.stringify(list));
+}
+function myTplBytes(list){
+  return utf8Bytes(JSON.stringify(list));
+}
+function myTplMaxBytes(){
+  return Math.max(200, settings.myTplMaxKB | 0) * 1024;
+}
+function cloneDocFresh(d){
+  const c = JSON.parse(JSON.stringify(d));
+  c.blocks = (c.blocks || []).map(b => ({ id:uid(), type:b.type, props:b.props }));
+  return migrate(c);
+}
+function saveCurrentAsMyTemplate(){
+  if (freeMode){
+    toast("フリー編集中はマイテンプレに保存できません — ブロック編集に戻ってから");
+    return false;
+  }
+  const name = prompt("マイテンプレの名前", (doc.blocks.find(b => b.type === "hero")?.props?.title || "無題").slice(0, 40));
+  if (name == null) return false;
+  const trimmed = String(name).trim().slice(0, 60) || "無題";
+  const entry = {
+    id: "m" + Math.random().toString(36).slice(2, 10),
+    name: trimmed,
+    savedAt: Date.now(),
+    doc: JSON.parse(snap()),
+  };
+  const list = loadMyTemplates();
+  const next = [entry, ...list];
+  const maxB = myTplMaxBytes();
+  if (myTplBytes(next) > maxB){
+    toast(`容量オーバー（上限 ${settings.myTplMaxKB} KB）。不要なマイテンプレを削除するか、デザインで上限を上げてください`);
+    return false;
+  }
+  try {
+    persistMyTemplates(next);
+    toast(`マイテンプレ「${trimmed}」を保存しました`);
+    return true;
+  } catch(e){
+    toast("ブラウザに保存できませんでした（容量不足の可能性）");
+    return false;
+  }
+}
+function deleteMyTemplate(id){
+  const list = loadMyTemplates().filter(t => t.id !== id);
+  try {
+    persistMyTemplates(list);
+    return true;
+  } catch { return false; }
+}
+
 /* ---- 状態・履歴 ---- */
-let doc = load() || defaultDoc();
+let doc = migrate(load() || defaultDoc());
 let undoStack = [], redoStack = [];
 let selectedId = null;
 let editSnap = null;      // テキスト編集セッション開始時のスナップショット
@@ -1588,6 +1870,7 @@ function render(){
   canvas.dataset.theme = doc.theme;
   canvas.dataset.bg = doc.bg;
   canvas.dataset.font = doc.font;
+  canvas.dataset.profile = doc.profile || "safe";
   canvas.innerHTML =
     `<div class="ins ins-top" title="ブロックを追加"><button class="insbtn">+</button></div>` +
     doc.blocks.map(blockHTML).join("");
@@ -1622,6 +1905,11 @@ function flipRender(){
 const findIdx = id => doc.blocks.findIndex(b => b.id === id);
 
 function insertBlock(type, index, props){
+  if (!REG[type]) return null;
+  if (!profileAllows(doc.profile, type)){
+    toast(`「${profileLabel(doc.profile)}」では「${REG[type].name}」は追加できません — デザインで向きを変更`);
+    return null;
+  }
   const prev = snap();
   const b = { id:uid(), type, props: props || REG[type].defaults() };
   doc.blocks.splice(index, 0, b);
@@ -1787,11 +2075,18 @@ let pickerIndex = 0;
 let paletteIns = null;
 
 function paletteHTML(){
-  const icons = Object.entries(REG).map(([type, def]) =>
-    `<button class="pal-ic" data-type="${type}" data-name="${esc(def.name)}" aria-label="${esc(def.name)}を追加">${BLOCK_ICONS[type] || BLOCK_ICONS._}</button>`
-  ).join("");
+  const allowed = allowedBlockTypes(doc.profile);
+  const hidden = Object.keys(REG).length - allowed.length;
+  const icons = allowed.map(type => {
+    const def = REG[type];
+    return `<button class="pal-ic" data-type="${type}" data-name="${esc(def.name)}" aria-label="${esc(def.name)}を追加">${BLOCK_ICONS[type] || BLOCK_ICONS._}</button>`;
+  }).join("");
+  const note = hidden > 0
+    ? `<div class="pal-note">${hidden}個の部品は「${esc(profileLabel(doc.profile))}」では出せません。「デザイン → 出力の向き」を変えると使えることがあります。</div>`
+    : "";
   return `<div class="palette">
     <div class="pal-bar">${icons}</div>
+    ${note}
     <div class="pal-stage">
       <div class="pal-hint">アイコンにカーソルを合わせるとプレビュー、クリックで追加</div>
       <div class="pal-ghost doc" data-theme="${doc.theme}" data-bg="${doc.bg}" data-font="${doc.font}" hidden></div>
@@ -1854,6 +2149,17 @@ const bgOptHTML = b => `
 
 function renderDesign(){
   design.innerHTML = `
+    <div class="dlab">出力の向き</div>
+    <div class="dhint">書き出したHTMLが、どれくらい厳しい公開先でも困りにくいかを決めます。ID（safe / standard / rich）ではなく、下の説明で選んでください。</div>
+    <div class="prow">${PROFILES.map(p => `
+      <button type="button" class="popt${p.id === doc.profile ? " on" : ""}${p.disabled ? " dis" : ""}"
+        data-profile-id="${p.id}" ${p.disabled ? "disabled" : ""}>
+        <span class="popt-top">
+          <span class="popt-name">${esc(p.label)}</span>
+          ${p.hint ? `<span class="popt-hint${p.hintClass ? " " + p.hintClass : ""}">${esc(p.hint)}</span>` : ""}
+        </span>
+        <span class="popt-desc">${esc(p.desc)}</span>
+      </button>`).join("")}</div>
     <div class="dlab">テーマ</div>
     <div class="drow">${THEMES.map(t => `
       <button class="topt${t.id === doc.theme ? " on" : ""}" data-theme-id="${t.id}" title="${t.name}">
@@ -1870,6 +2176,17 @@ function renderDesign(){
         <span class="fprev" style="font-family:${f.prev}${f.id === "modern" ? ";font-weight:800" : ""}">あA</span>
         <span class="optnm">${f.name}</span>
       </button>`).join("")}
+    </div>
+    <div class="dlab">ブラウザ設定</div>
+    <div class="dhint">この端末のブラウザ内だけ。アカウントはありません。マイテンプレの上限はメモリ目安です。</div>
+    <div class="srow">
+      <label for="set-mytpl-kb">マイテンプレ上限</label>
+      <input type="number" id="set-mytpl-kb" min="200" max="20000" step="100" value="${settings.myTplMaxKB}">
+      <span class="sunit">KB</span>
+      <button type="button" class="sbtn" id="set-mytpl-apply">反映</button>
+    </div>
+    <div class="srow" style="margin-top:10px">
+      <button type="button" class="sbtn" id="btn-save-mytpl">いまの文書をマイテンプレに保存</button>
     </div>`;
 }
 $("#btn-design").addEventListener("click", () => {
@@ -1885,10 +2202,32 @@ function closeDesign(){
   design.classList.remove("open");
 }
 design.addEventListener("click", e => {
+  if (e.target.id === "set-mytpl-apply"){
+    const raw = +($("#set-mytpl-kb") && $("#set-mytpl-kb").value);
+    const kb = Math.max(200, Math.min(20000, raw || DEFAULT_SETTINGS.myTplMaxKB));
+    settings = { myTplMaxKB: kb };
+    if (saveSettings(settings)) toast(`マイテンプレ上限を ${kb} KB にしました`);
+    else toast("設定を保存できませんでした");
+    renderDesign();
+    return;
+  }
+  if (e.target.id === "btn-save-mytpl"){
+    saveCurrentAsMyTemplate();
+    return;
+  }
+  const pr = e.target.closest("[data-profile-id]");
   const th = e.target.closest("[data-theme-id]");
   const bg = e.target.closest("[data-bg-id]");
   const ft = e.target.closest("[data-font-id]");
-  if (!th && !bg && !ft) return;
+  if (!pr && !th && !bg && !ft) return;
+  if (pr){
+    if (pr.disabled || pr.classList.contains("dis")) return;
+    if (setProfile(pr.dataset.profileId)){
+      closePalette();
+      renderDesign();
+    }
+    return;
+  }
   pushUndo(snap());
   if (th) doc.theme = th.dataset.themeId;
   if (bg) doc.bg = bg.dataset.bgId;
@@ -2465,7 +2804,7 @@ html,body{margin:0;padding:0}
 ${css}
 </style>
 </head>
-<body class="doc" data-theme="${doc.theme}" data-bg="${doc.bg}" data-font="${doc.font}">
+<body class="doc" data-theme="${doc.theme}" data-bg="${doc.bg}" data-font="${doc.font}" data-profile="${esc(doc.profile || "safe")}">
 <main class="page">
 ${body}
 </main>
@@ -2910,7 +3249,7 @@ html,body{margin:0;padding:0;height:100%}
 .doc .page{width:100%;max-width:880px}
 ${css}
 </style></head>
-<body class="doc" data-theme="${doc.theme}" data-bg="${doc.bg}" data-font="${doc.font}">
+<body class="doc" data-theme="${doc.theme}" data-bg="${doc.bg}" data-font="${doc.font}" data-profile="${esc(doc.profile || "safe")}">
 <main class="page">${body}</main>
 </body></html>`;
 }
@@ -3029,7 +3368,7 @@ const CLASS2TYPE = {
   "b-table":"table", "b-todo":"todo", "b-toggle":"toggle", "b-callout":"callout", "b-faq":"faq",
   "b-timeline":"timeline", "b-badges":"badges", "b-btn":"button", "b-divider":"divider",
   "b-chart":"chart", "b-quote":"quote", "b-code":"code", "b-link":"linkcard", "b-image":"image",
-  "b-video":"video", "b-pdf":"pdf", "b-closing":"closing",
+  "b-video":"video", "b-pdf":"pdf", "b-closing":"closing", "b-carousel":"carousel",
 };
 
 /* パス（"items.0.h" 等）に沿って値を格納。途中の配列/オブジェクトは自動生成 */
@@ -3106,6 +3445,7 @@ function parseDom(text){
     theme: THEMES.some(t => t.id === ds.theme) ? ds.theme : "paper",
     bg: ds.bg || "plain",
     font: FONTS.some(f => f.id === ds.font) ? ds.font : "elegant",
+    profile: normalizeProfile(ds.profile),
     blocks,
   };
 }
@@ -3167,6 +3507,10 @@ function ingestHTML(text, opts){
     if (!opts || !opts.quiet){
       toast(c.how === "json" ? INGEST_MSG.json : INGEST_MSG.dom);
     }
+    const bad = doc.blocks.filter(b => !profileAllows(doc.profile, b.type));
+    if (bad.length){
+      setTimeout(() => toast(`いまの向き（${profileLabel(doc.profile)}）と合わない部品が ${bad.length} 個あります`), 400);
+    }
     return true;
   }
   enterFree(c.html, (opts && opts.freeMsg) || INGEST_MSG.free);
@@ -3183,16 +3527,47 @@ $("#file-in").addEventListener("change", async e => {
 
 /* ---- テンプレートギャラリー ---- */
 const tplMask = $("#tpl-mask");
+function tplCardHTML(t, d, attrs){
+  const prev = (d.blocks || []).slice(0, 3).map(b => REG[b.type] ? REG[b.type].render(b.props, true) : "").join("");
+  return `<button type="button" class="tpl-card" ${attrs}>
+      <div class="tpl-th"><div class="doc" data-theme="${d.theme}" data-bg="${d.bg}" data-font="${d.font}">${prev}</div></div>
+      <div class="tpl-meta"><div class="tpl-nm">${esc(t.name)}</div><div class="tpl-desc">${esc(t.desc || "")}</div></div>
+    </button>`;
+}
 function openTemplates(){
   closePalette(); closeDesign(); closeChartEdit();
-  $("#tpl-grid").innerHTML = TEMPLATES.map(t => {
+  const mine = loadMyTemplates();
+  const used = myTplBytes(mine);
+  const maxB = myTplMaxBytes();
+  const official = TEMPLATES.map(t => {
     const d = t.make();
-    const prev = d.blocks.slice(0, 3).map(b => REG[b.type].render(b.props, true)).join("");
-    return `<button class="tpl-card" data-tpl="${t.id}">
-      <div class="tpl-th"><div class="doc" data-theme="${d.theme}" data-bg="${d.bg}" data-font="${d.font}">${prev}</div></div>
-      <div class="tpl-meta"><div class="tpl-nm">${esc(t.name)}</div><div class="tpl-desc">${esc(t.desc)}</div></div>
-    </button>`;
+    return tplCardHTML(t, d, `data-tpl="${t.id}"`);
   }).join("");
+  const myCards = mine.length
+    ? mine.map(t => {
+        const d = t.doc || { theme:"paper", bg:"plain", font:"elegant", blocks:[] };
+        const when = t.savedAt ? new Date(t.savedAt).toLocaleDateString("ja-JP") : "";
+        return `<div class="tpl-card-wrap">
+          ${tplCardHTML({ name:t.name, desc: when ? `保存日 ${when}` : "マイテンプレート" }, d, `data-mytpl="${esc(t.id)}"`)}
+          <button type="button" class="tpl-del" data-mytpl-del="${esc(t.id)}" title="このマイテンプレを削除">×</button>
+        </div>`;
+      }).join("")
+    : `<div class="tpl-empty">まだマイテンプレはありません。<br>下のボタン、または「デザイン → ブラウザ設定」からいまの文書を保存できます。</div>`;
+  $("#tpl-body").innerHTML = `
+    <div class="tpl-sec">
+      <div class="tpl-sec-h"><span>公式</span></div>
+      <div class="tpl-grid">${official}</div>
+    </div>
+    <div class="tpl-sec">
+      <div class="tpl-sec-h">
+        <span>マイ</span>
+        <div class="tpl-sec-actions">
+          <span class="tpl-quota">${fmtKB(used)} / ${fmtKB(maxB)} KB</span>
+          <button type="button" class="tpl-savebtn" id="tpl-save-current">いまの文書を保存</button>
+        </div>
+      </div>
+      <div class="tpl-grid">${myCards}</div>
+    </div>`;
   tplMask.classList.add("open");
   requestAnimationFrame(() => tplMask.classList.add("vis"));
 }
@@ -3214,7 +3589,36 @@ $("#btn-new").addEventListener("click", () => {
 });
 $("#tpl-x").addEventListener("click", closeTemplates);
 tplMask.addEventListener("click", e => { if (e.target === tplMask) closeTemplates(); });
-$("#tpl-grid").addEventListener("click", e => {
+$("#tpl-body").addEventListener("click", e => {
+  const del = e.target.closest("[data-mytpl-del]");
+  if (del){
+    e.preventDefault();
+    e.stopPropagation();
+    const id = del.dataset.mytplDel;
+    const t = loadMyTemplates().find(x => x.id === id);
+    if (!t) return;
+    if (!confirm(`マイテンプレ「${t.name}」を削除しますか？`)) return;
+    if (deleteMyTemplate(id)){
+      toast("マイテンプレを削除しました");
+      openTemplates();
+    }
+    return;
+  }
+  if (e.target.id === "tpl-save-current" || e.target.closest("#tpl-save-current")){
+    if (saveCurrentAsMyTemplate()) openTemplates();
+    return;
+  }
+  const my = e.target.closest("[data-mytpl]");
+  if (my){
+    const t = loadMyTemplates().find(x => x.id === my.dataset.mytpl);
+    if (!t || !t.doc) return;
+    pushUndo(snap());
+    doc = cloneDocFresh(t.doc);
+    save(); flipRender();
+    closeTemplates();
+    toast(`マイテンプレ「${t.name}」を読み込みました（⌘Zで戻せます）`);
+    return;
+  }
   const card = e.target.closest("[data-tpl]");
   if (!card) return;
   const t = TEMPLATES.find(x => x.id === card.dataset.tpl);
@@ -3233,11 +3637,29 @@ function buildPrompt(){
   const bgList    = BGS.map(b => b.id).join(" / ");
   const motifList = MOTIFS.map(b => b.id).join(" / ");
   const fontList  = FONTS.map(f => f.id).join(" / ");
-  const examples = Object.entries(REG).filter(([, def]) => !def.chart).map(([type, def]) => {
+  const profile = normalizeProfile(doc.profile);
+  const pdef = profileDef(profile);
+  const allowed = allowedBlockTypes(profile);
+  const examples = allowed.filter(type => !REG[type].chart).map(type => {
+    const def = REG[type];
     const p = def.defaults();
     if (type === "image" || type === "video" || type === "pdf") p.src = "data:...（" + def.name + "のデータURIをここに）";
     return `■ ${def.name}（${type}）\n${FENCE}html\n${def.render(p, true).trim()}\n${FENCE}`;
   }).join("\n\n");
+  const profileRules = profile === "safe"
+    ? [
+        "8. 出力プロファイルは safe（いちばん無難）。<script> タグ（編集用 JSON を除く）、インラインイベントハンドラ、外部スクリプトは禁止。動きは HTML/CSS とネイティブ要素（details 等）だけ。",
+        '9. <body> に data-profile="safe" を付ける。',
+      ]
+    : profile === "standard"
+    ? [
+        "8. 出力プロファイルは standard（ややゆるめ）。軽量な動きは可。外部 fetch や評価系は使わない。",
+        '9. <body> に data-profile="standard" を付ける。',
+      ]
+    : [
+        "8. 出力プロファイルは rich。必要な範囲でネットワーク連携も可だが、外部依存は最小に。",
+        '9. <body> に data-profile="rich" を付ける。',
+      ];
 
   return [
 "# 役割",
@@ -3248,9 +3670,14 @@ function buildPrompt(){
 "2. レイアウトは下記「使えるブロック」の構造だけを使う。独自のclassやstyle属性、新しいタグ構造を足さない。",
 "3. 変えてよいのは各ブロック内の文章・見出し・数値などの中身だけ。class名・data-* 属性・タグ構造はテンプレート通りに保つ（これによりHatlierで再編集できます）。",
 "4. <head> の <style> には、後述の「共通CSS」を一字一句そのまま入れる。",
-'5. <body> には必ず class="doc" と data-theme / data-bg / data-font を付け、中身は <main class="page"> … </main> にブロックを縦に並べる。',
+'5. <body> には必ず class="doc" と data-theme / data-bg / data-font / data-profile を付け、中身は <main class="page"> … </main> にブロックを縦に並べる。',
 '6. カラム／統計／ステップで項目数を増減したら、その <section> の style="--n:数" を実際の項目数に必ず合わせる（列数の指定）。',
 "7. 出力はHTMLコードのみ。前後の説明文は書かない。",
+...profileRules,
+"",
+"# いまの出力の向き（プロファイル）",
+`- ${pdef.label}（${profile}）: ${pdef.desc}`,
+"使えるブロックはこの向きで許可されたものだけ。下の一覧以外は使わない。",
 "",
 "# 選べるスタイル（それぞれ1つ選ぶ）",
 "- data-theme（配色）: " + themeList,
@@ -3270,7 +3697,7 @@ FENCE + "html",
 "（下の「共通CSS」をそのまま貼り付け）",
 "</style>",
 "</head>",
-'<body class="doc" data-theme="paper" data-bg="plain" data-font="elegant">',
+`<body class="doc" data-theme="paper" data-bg="plain" data-font="elegant" data-profile="${profile}">`,
 '<main class="page">',
 "  <!-- ここに下のブロックを必要な数だけ縦に並べる（最初はhero、最後はclosingが目安） -->",
 "</main>",
