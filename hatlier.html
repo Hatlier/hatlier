@@ -272,9 +272,10 @@ a.lc:hover{box-shadow:0 10px 28px -10px rgba(0,0,0,.22);transform:translateY(-1.
 .drop svg{display:block;margin:0 auto 12px;opacity:.55}
 .drop:hover{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 4%,transparent)}
 
-/* カルーセル（CSS scroll-snap・JS不要） */
+/* カルーセル（基本は CSS scroll-snap。ループ時のみ最小JS） */
 .b-carousel{padding-top:18px;padding-bottom:18px}
 .car-hint{font-size:11px;letter-spacing:.08em;color:var(--muted);margin:0 0 10px;font-weight:600}
+.car-frame{position:relative}
 .car-track{
   display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;
   -webkit-overflow-scrolling:touch;scrollbar-width:thin;
@@ -284,18 +285,66 @@ a.lc:hover{box-shadow:0 10px 28px -10px rgba(0,0,0,.22);transform:translateY(-1.
 .car-track::-webkit-scrollbar{height:6px}
 .car-track::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--muted) 45%,transparent);border-radius:99px}
 .car-slide{
-  flex:0 0 calc(100% - 8px);scroll-snap-align:start;scroll-snap-stop:always;
-  box-sizing:border-box;min-height:140px;
+  flex:0 0 86%;scroll-snap-align:start;scroll-snap-stop:always;
+  box-sizing:border-box;min-height:140px;position:relative;
   background:var(--surface);border:1px solid var(--line);border-radius:14px;
   padding:28px 26px 26px;
 }
+.b-carousel.is-loop .car-slide{flex-basis:calc(100% - 8px)}
 .car-slide h3{font-family:var(--f-head);font-weight:600;font-size:20px;line-height:1.55;margin:0 0 10px}
 .car-slide p{color:var(--muted);font-size:13.5px;line-height:1.9;margin:0}
+.car-num{
+  position:absolute;top:12px;right:14px;
+  font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--muted);
+}
+.car-fig{margin:0 0 14px;position:relative}
+.car-fig img{width:100%;display:block;border-radius:10px;border:1px solid var(--line);max-height:220px;object-fit:cover}
+.car-imgx{
+  position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:8px;
+  background:rgba(255,255,255,.92);border:1px solid rgba(20,20,30,.12);color:#6B6B74;cursor:pointer;font-size:14px;line-height:1;
+}
+.car-addimg{
+  display:block;width:100%;margin:0 0 14px;padding:18px 12px;border-radius:10px;
+  border:1.5px dashed var(--line);background:transparent;color:var(--muted);
+  font:inherit;font-size:12px;letter-spacing:.04em;cursor:pointer;text-align:center;
+}
+.car-addimg:hover{border-color:var(--accent);color:var(--accent)}
+.car-addlink{
+  display:inline-block;margin-top:12px;padding:0;border:none;background:none;
+  color:var(--muted);font:inherit;font-size:12px;letter-spacing:.04em;cursor:pointer;text-decoration:underline;
+  text-underline-offset:3px;
+}
+.car-addlink:hover{color:var(--accent)}
+.car-linkrow{margin-top:14px;display:flex;flex-direction:column;gap:4px}
+.car-ll{font-size:13px;font-weight:700;color:var(--accent)}
+.car-lu{font-size:11px;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Consolas,monospace;word-break:break-all}
+a.car-link{
+  display:inline-block;margin-top:14px;font-size:13px;font-weight:700;color:var(--accent);text-decoration:none;
+  border-bottom:1px solid color-mix(in srgb,var(--accent) 35%,transparent);
+}
+a.car-link:hover{border-bottom-color:var(--accent)}
+.car-nav{
+  position:absolute;top:50%;z-index:2;transform:translateY(-60%);
+  width:36px;height:36px;border-radius:999px;border:1px solid var(--line);
+  background:color-mix(in srgb,var(--surface) 92%,transparent);color:var(--ink);
+  font-size:22px;line-height:1;cursor:pointer;
+  box-shadow:0 8px 22px -12px rgba(20,20,30,.35);
+}
+.car-prev{left:6px}
+.car-next{right:6px}
+.car-nav:hover{background:var(--surface)}
+.ce-check{
+  display:flex;align-items:flex-start;gap:8px;margin:8px 0;font-size:12.5px;line-height:1.45;color:#2A2A32;cursor:pointer;
+}
+.ce-check input{margin-top:2px}
+.ce-note{margin-top:10px;font-size:11px;line-height:1.5;color:#8A8A94}
 @media(max-width:640px){
-  .car-slide{flex-basis:calc(100% - 4px);padding:22px 18px}
+  .car-slide{flex-basis:88%;padding:22px 18px}
+  .b-carousel.is-loop .car-slide{flex-basis:calc(100% - 4px)}
+  .car-nav{width:32px;height:32px;font-size:18px}
 }
 @media print{
-  .car-hint{display:none}
+  .car-hint,.car-nav,.car-addimg,.car-addlink,.car-imgx{display:none!important}
   .car-track{display:block;overflow:visible;padding:0}
   .car-slide{flex:none;width:100%;margin-bottom:12px;break-inside:avoid}
 }
@@ -766,7 +815,7 @@ body.freemode .free-wrap{display:block}
 <header class="topbar">
   <div class="brand">
     <span class="dot"></span>Hatlier
-    <a class="ver" id="app-ver" href="https://github.com/Hatlier/hatlier/blob/main/ROADMAP.md" target="_blank" rel="noopener" title="バージョンと開発予定（ROADMAP）">v0.5.0</a>
+    <a class="ver" id="app-ver" href="https://github.com/Hatlier/hatlier/blob/main/ROADMAP.md" target="_blank" rel="noopener" title="バージョンと開発予定（ROADMAP）">v0.5.1</a>
   </div>
   <button class="txtbtn" id="btn-new" title="テンプレートから新しい文書を作る">新規</button>
   <button class="txtbtn" id="btn-open" title="Hatlierで書き出したHTML、またはHatlier形式のHTMLを読み込んで編集">開く</button>
@@ -951,7 +1000,7 @@ body.freemode .free-wrap{display:block}
 const $  = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const uid = () => "b" + Math.random().toString(36).slice(2, 9);
-const HATLIER_VERSION = "0.5.0";
+const HATLIER_VERSION = "0.5.1";
 const STORE_KEY = "hatlier.v1";
 const STORE_KEY_LEGACY = "atelier.v1";
 const FREE_KEY = "hatlier.free.v1";
@@ -1262,23 +1311,45 @@ function normalizeProfile(id){
   return PROFILES.some(p => p.id === id) ? id : "safe";
 }
 function profileLabel(id){ return profileDef(id).label; }
-function needsOf(type){
+function needsOf(type, props){
   const n = REG[type] && REG[type].needs;
-  return Array.isArray(n) ? n : [];
+  const out = Array.isArray(n) ? n.slice() : [];
+  if (type === "carousel" && props && props.loop) out.push("js");
+  return out;
 }
-function profileAllows(profileId, type){
-  const needs = needsOf(type);
+function profileAllows(profileId, type, props){
+  const needs = needsOf(type, props);
   if (!needs.length) return true;
   const allow = profileDef(profileId).allowNeeds || [];
   return needs.every(n => allow.includes(n));
+}
+function profileAllowsBlock(profileId, b){
+  return profileAllows(profileId, b.type, b.props);
 }
 function allowedBlockTypes(profileId){
   return Object.keys(REG).filter(t => profileAllows(profileId, t));
 }
 
+function carSlideDefaults(){
+  return { h:"新しいスライド", t:"説明をここに。", src:"", url:"", label:"" };
+}
+function normalizeCarouselProps(p){
+  const out = Object.assign({ showNumbers:false, loop:false, items:[] }, p || {});
+  out.showNumbers = !!out.showNumbers;
+  out.loop = !!out.loop;
+  out.items = (out.items || []).map(it => ({
+    h: it && it.h != null ? String(it.h) : "",
+    t: it && it.t != null ? String(it.t) : "",
+    src: it && it.src ? String(it.src) : "",
+    url: it && it.url ? String(it.url) : "",
+    label: it && it.label ? String(it.label) : "",
+  }));
+  return out;
+}
+
 /* needs: 書き出しに必要な能力。省略＝[]（HTML/CSSのみ → safe 可）
    "js" | "media" | "fetch"
-   現状の部品はすべて safe 可（details・静的SVGグラフ・ネイティブ controls） */
+   carousel の loop だけインスタンス単位で js が付く */
 const REG = {
   hero: {
     name: "ヒーロー見出し",
@@ -1498,21 +1569,53 @@ const REG = {
   },
   carousel: {
     name: "カルーセル",
-    defaults: () => ({ items:[
-      { h:"スライド 1", t:"横にスワイプ（またはスクロール）して次へ。スクリプトなしの scroll-snap で動きます。" },
-      { h:"スライド 2", t:"厳しいCSPの公開先でも動きやすい向き（いちばん無難）でも使えます。" },
-      { h:"スライド 3", t:"右上の＋/−で枚数を増減。印刷時は縦に並びます。" },
-    ]}),
-    ops: arrOps(p => p.items, () => ({ h:"新しいスライド", t:"説明をここに。" }), 2, 8, "スライドを追加", "末尾のスライドを削除"),
-    render: p => `<section class="blk b-carousel">
-      <div class="car-hint">← 横にスワイプ / スクロール →</div>
-      <div class="car-track">${(p.items || []).map((it,i)=>`
-        <div class="car-slide">
+    defaults: () => ({
+      showNumbers: false,
+      loop: false,
+      items:[
+        { h:"スライド 1", t:"左右どちらにもスワイプできます。次のスライドが少し見えるので、行き来しやすい形です。", src:"", url:"", label:"" },
+        { h:"スライド 2", t:"画像やリンクもスライドごとに付けられます。空のままなら出ません。", src:"", url:"", label:"" },
+        { h:"スライド 3", t:"番号やループはブロック右上の「表示」から。ループだけ向きの制約があります。", src:"", url:"", label:"" },
+      ]
+    }),
+    ops: arrOps(p => p.items, carSlideDefaults, 2, 8, "スライドを追加", "末尾のスライドを削除"),
+    render: (p, forExport) => {
+      const c = normalizeCarouselProps(p);
+      const n = c.items.length || 1;
+      const slides = c.items.map((it, i) => {
+        const num = c.showNumbers ? `<div class="car-num">${i + 1} / ${n}</div>` : "";
+        const img = it.src
+          ? `<figure class="car-fig"><img src="${it.src}" alt="">${forExport ? "" : `<button type="button" class="car-imgx" data-car-img-clear="${i}" title="画像を外す">×</button>`}</figure>`
+          : (forExport ? "" : `<button type="button" class="car-addimg" data-car-img="${i}">＋ 画像</button>`);
+        const url = String(it.url || "").trim();
+        const safe = /^https?:\/\//i.test(url) ? esc(url) : "";
+        const hasLink = !!(String(it.url || "").trim() || String(it.label || "").trim());
+        const link = forExport
+          ? (safe ? `<a class="car-link" href="${safe}" target="_blank" rel="noopener">${esc(it.label || url)}</a>` : "")
+          : (hasLink
+            ? `<div class="car-linkrow">
+                <span class="car-ll" data-edit="items.${i}.label" data-single data-ph="リンク文言（任意）">${esc(it.label)}</span>
+                <span class="car-lu" data-edit="items.${i}.url" data-single data-ph="https://…">${esc(it.url)}</span>
+              </div>`
+            : `<button type="button" class="car-addlink" data-car-link="${i}">＋ リンク</button>`);
+        return `<div class="car-slide">${num}${img}
           <h3 data-edit="items.${i}.h" data-single>${esc(it.h)}</h3>
           <p data-edit="items.${i}.t">${esc(it.t)}</p>
-        </div>`).join("")}
-      </div>
-    </section>`
+          ${link}
+        </div>`;
+      }).join("");
+      const nav = c.loop
+        ? `<button type="button" class="car-nav car-prev" data-car-nav="-1" aria-label="前のスライド">‹</button>
+           <button type="button" class="car-nav car-next" data-car-nav="1" aria-label="次のスライド">›</button>`
+        : "";
+      const hint = c.loop
+        ? `<div class="car-hint">← → ループ（最後の次は最初へ）</div>`
+        : `<div class="car-hint">← 左右どちらにもスワイプ / スクロール →</div>`;
+      return `<section class="blk b-carousel${c.loop ? " is-loop" : ""}${c.showNumbers ? " has-nums" : ""}"${c.loop ? ` data-car-loop="1"` : ""}${c.showNumbers ? ` data-car-nums="1"` : ""}>
+      ${hint}
+      <div class="car-frame">${nav}<div class="car-track">${slides}</div></div>
+    </section>`;
+    }
   },
 };
 
@@ -1551,10 +1654,10 @@ const TEMPLATES = [
     mkb("hero", { kicker:"PRODUCT", title:"迷わず伝わる、1枚のプロダクト紹介", lede:"いちばん伝えたい価値を最初の3行で。読み手が続きを読みたくなる導入を書きましょう。" }),
     mkb("stats", { items:[ {v:"98%", l:"導入企業の継続率"}, {v:"3分", l:"はじめての設定時間"}, {v:"24/7", l:"サポート体制"} ] }),
     mkb("cols", { items:[ {h:"かんたん", t:"むずかしい設定は不要。開いてすぐに使えます。"}, {h:"はやい", t:"待たされないレスポンスで作業が止まりません。"}, {h:"安全", t:"データは手元に。外部への送信はありません。"} ] }),
-    mkb("carousel", { items:[
-      { h:"画面で見せる", t:"要点を1枚ずつ。読み手は横にスワイプするだけ。" },
-      { h:"スクリプトなし", t:"CSSの scroll-snap。厳しい公開先でも動きやすい。" },
-      { h:"あとから直せる", t:"枚数も文面も、Hatlier上でそのまま編集。" },
+    mkb("carousel", { showNumbers:false, loop:false, items:[
+      { h:"画面で見せる", t:"要点を1枚ずつ。読み手は左右どちらにもスワイプできます。", src:"", url:"", label:"" },
+      { h:"スクリプトなし", t:"基本は CSS の scroll-snap。厳しい公開先でも動きやすい。", src:"", url:"", label:"" },
+      { h:"あとから直せる", t:"枚数も文面も、Hatlier上でそのまま編集。", src:"", url:"", label:"" },
     ]}),
     mkb("steps", { items:[ {h:"登録", t:"メールだけで開始。"}, {h:"設定", t:"3ステップで完了。"}, {h:"活用", t:"すぐに効果を実感。"} ] }),
     mkb("faq", { items:[ {q:"無料で試せますか？", a:"はい、14日間の無料トライアルがあります。"}, {q:"解約はいつでもできますか？", a:"いつでも可能です。違約金はありません。"} ] }),
@@ -1603,6 +1706,9 @@ function migrate(d){
     if (b.type === "twocol"){
       return { id:b.id, type:"cols", props:{ items:[ {h:b.props.a.h, t:b.props.a.t}, {h:b.props.b.h, t:b.props.b.t} ] } };
     }
+    if (b.type === "carousel"){
+      return { id:b.id, type:"carousel", props: normalizeCarouselProps(b.props) };
+    }
     return b;
   });
   return d;
@@ -1615,7 +1721,7 @@ function setProfile(nextId){
     return false;
   }
   if (next === doc.profile) return false;
-  const bad = doc.blocks.filter(b => !profileAllows(next, b.type));
+  const bad = doc.blocks.filter(b => !profileAllowsBlock(next, b));
   if (bad.length){
     const names = [...new Set(bad.map(b => (REG[b.type] && REG[b.type].name) || b.type))].join("、");
     const ok = confirm(
@@ -1623,7 +1729,7 @@ function setProfile(nextId){
     );
     if (!ok) return false;
     pushUndo(snap());
-    doc.blocks = doc.blocks.filter(b => profileAllows(next, b.type));
+    doc.blocks = doc.blocks.filter(b => profileAllowsBlock(next, b));
     doc.profile = next;
     save();
     flipRender();
@@ -1838,6 +1944,8 @@ function blockHTML(b){
     ? `<button class="tb tb-op" data-act="media" title="ファイルを差し替え">差替</button>` : "";
   const chartBtn = def.chart
     ? `<button class="tb tb-op" data-act="chartedit" title="グラフの種類・データを編集">データ</button>` : "";
+  const carBtn = b.type === "carousel"
+    ? `<button class="tb tb-op" data-act="caredit" title="番号・ループなどの表示設定">表示</button>` : "";
   const heroBtn = b.type === "hero"
     ? `<button class="tb tb-op" data-act="herobg" title="タイトルの背景画像を設定（貼り付け・ドロップも可）">${b.props.bg ? "背景変更" : "背景画像"}</button>`
       + (b.props.bg ? `<button class="tb tb-op" data-act="herobgclear" title="背景画像を外す">背景×</button>` : "")
@@ -1856,7 +1964,7 @@ function blockHTML(b){
       <svg width="10" height="17" viewBox="0 0 10 17" fill="currentColor"><circle cx="2.5" cy="3" r="1.5"/><circle cx="7.5" cy="3" r="1.5"/><circle cx="2.5" cy="8.5" r="1.5"/><circle cx="7.5" cy="8.5" r="1.5"/><circle cx="2.5" cy="14" r="1.5"/><circle cx="7.5" cy="14" r="1.5"/></svg>
     </div>
     <div class="btools">
-      ${ops}${mediaBtn}${chartBtn}${heroBtn}${stepBtn}${capBtns}
+      ${ops}${mediaBtn}${chartBtn}${carBtn}${heroBtn}${stepBtn}${capBtns}
       <button class="tb" data-act="dup" title="複製 (⌘D)"><svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><rect x="4.5" y="4.5" width="8" height="8" rx="2"/><path d="M9.5 2.5h-5a2 2 0 0 0-2 2v5"/></svg></button>
       <button class="tb tb-del" data-act="del" title="削除"><svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3.5h10"/><path d="M5.3 3.5V2.4a.8.8 0 0 1 .8-.8h1.8a.8.8 0 0 1 .8.8v1.1"/><path d="M3.4 3.5l.6 8.1a1 1 0 0 0 1 .9h4a1 1 0 0 0 1-.9l.6-8.1"/></svg></button>
     </div>
@@ -2012,6 +2120,45 @@ canvas.addEventListener("click", e => {
     return;
   }
   if (e.target.closest(".palette")) return;   // パレット内の余白クリックは無視
+  const carNav = e.target.closest("[data-car-nav]");
+  if (carNav){
+    const track = carNav.closest(".b-carousel")?.querySelector(".car-track");
+    if (track) carStep(track, +carNav.dataset.carNav, true);
+    e.preventDefault();
+    return;
+  }
+  const carImg = e.target.closest("[data-car-img]");
+  if (carImg){
+    const id = carImg.closest(".bw").dataset.id;
+    openMediaDialog("image", id, "src", `items.${carImg.dataset.carImg}.src`);
+    return;
+  }
+  const carClr = e.target.closest("[data-car-img-clear]");
+  if (carClr){
+    const id = carClr.closest(".bw").dataset.id;
+    const b = doc.blocks[findIdx(id)];
+    if (!b) return;
+    const prev = snap();
+    setPath(b.props, `items.${carClr.dataset.carImgClear}.src`, "");
+    pushUndo(prev); save(); flipRender();
+    return;
+  }
+  const carLink = e.target.closest("[data-car-link]");
+  if (carLink){
+    const id = carLink.closest(".bw").dataset.id;
+    const b = doc.blocks[findIdx(id)];
+    if (!b || !b.props.items) return;
+    const it = b.props.items[+carLink.dataset.carLink];
+    if (!it) return;
+    const prev = snap();
+    if (!String(it.label || "").trim()) it.label = "詳しく見る";
+    if (!String(it.url || "").trim()) it.url = "https://";
+    pushUndo(prev); save(); flipRender();
+    requestAnimationFrame(() => {
+      canvas.querySelector(`.bw[data-id="${id}"] [data-edit="items.${carLink.dataset.carLink}.url"]`)?.focus();
+    });
+    return;
+  }
   const act = e.target.closest("[data-act]");
   if (act){
     const id = act.closest(".bw").dataset.id;
@@ -2019,6 +2166,7 @@ canvas.addEventListener("click", e => {
     else if (act.dataset.act === "del") removeBlock(id);
     else if (act.dataset.act === "media") openMediaDialog(doc.blocks[findIdx(id)].type, id);
     else if (act.dataset.act === "chartedit") openChartEdit(id, act);
+    else if (act.dataset.act === "caredit") openCarouselEdit(id, act);
     else if (act.dataset.act === "herobg") openMediaDialog("hero", id, "bg");
     else if (act.dataset.act === "herobgclear"){
       const b = doc.blocks[findIdx(id)];
@@ -2240,9 +2388,25 @@ design.addEventListener("click", e => {
   renderDesign();
 });
 
-/* ---- グラフのデータ編集ポップオーバー ---- */
+/* ---- グラフ／カルーセルの編集ポップオーバー ---- */
 const chartEdit = $("#chartedit");
-let chartEditId = null, chartSnap = null;
+let chartEditId = null, chartSnap = null, popEditKind = null;
+
+function carStep(track, dir, loop){
+  const slide = track.querySelector(".car-slide");
+  if (!slide) return;
+  const gap = parseFloat(getComputedStyle(track).columnGap || getComputedStyle(track).gap) || 0;
+  const step = slide.getBoundingClientRect().width + gap;
+  const max = Math.max(0, track.scrollWidth - track.clientWidth);
+  let next = track.scrollLeft + dir * step;
+  if (loop){
+    if (next > max + 4) next = 0;
+    else if (next < -4) next = max;
+  } else {
+    next = Math.max(0, Math.min(max, next));
+  }
+  track.scrollTo({ left: next, behavior: "smooth" });
+}
 
 /* 1ブロックだけを再描画（他ブロックやポップオーバーの状態を保ったまま） */
 function rerenderBlock(id){
@@ -2255,12 +2419,25 @@ function rerenderBlock(id){
   });
 }
 function openChartEdit(id, anchor){
-  if (chartEdit.classList.contains("open") && chartEditId === id){ closeChartEdit(); return; }
+  if (chartEdit.classList.contains("open") && chartEditId === id && popEditKind === "chart"){ closeChartEdit(); return; }
   if (chartEdit.classList.contains("open")) closeChartEdit();
   closePalette(); closeDesign();
   chartEditId = id;
+  popEditKind = "chart";
   chartSnap = snap();
   renderChartEdit();
+  chartEdit.classList.add("open");
+  positionPop(chartEdit, anchor);
+  requestAnimationFrame(() => chartEdit.classList.add("vis"));
+}
+function openCarouselEdit(id, anchor){
+  if (chartEdit.classList.contains("open") && chartEditId === id && popEditKind === "carousel"){ closeChartEdit(); return; }
+  if (chartEdit.classList.contains("open")) closeChartEdit();
+  closePalette(); closeDesign();
+  chartEditId = id;
+  popEditKind = "carousel";
+  chartSnap = snap();
+  renderCarouselEdit();
   chartEdit.classList.add("open");
   positionPop(chartEdit, anchor);
   requestAnimationFrame(() => chartEdit.classList.add("vis"));
@@ -2268,7 +2445,7 @@ function openChartEdit(id, anchor){
 function closeChartEdit(){
   if (!chartEdit.classList.contains("open")) return;
   if (chartEditId && chartSnap != null && chartSnap !== snap()){ pushUndo(chartSnap); save(); }
-  chartSnap = null; chartEditId = null;
+  chartSnap = null; chartEditId = null; popEditKind = null;
   chartEdit.classList.remove("vis");
   chartEdit.classList.remove("open");
 }
@@ -2288,16 +2465,48 @@ function renderChartEdit(){
       </div>`).join("")}</div>
     <button class="ce-add" data-cadd>＋ データを追加</button>`;
 }
+function renderCarouselEdit(){
+  const b = doc.blocks[findIdx(chartEditId)];
+  if (!b) return;
+  const p = normalizeCarouselProps(b.props);
+  b.props = p;
+  chartEdit.innerHTML = `
+    <div class="ce-lab">カルーセルの表示</div>
+    <label class="ce-check"><input type="checkbox" data-car-opt="showNumbers"${p.showNumbers ? " checked" : ""}> スライド番号を出す（1 / 3）</label>
+    <label class="ce-check"><input type="checkbox" data-car-opt="loop"${p.loop ? " checked" : ""}> 端をつなぐ（ループ）</label>
+    <div class="ce-note">オプションはこの2つだけ。画像・リンクは各スライド上で直接付けます。ループは左右ボタン付きで、スクリプトが必要＝「ややゆるめ」向き向けです。</div>`;
+}
 chartEdit.addEventListener("click", e => {
   const b = doc.blocks[findIdx(chartEditId)];
   if (!b) return;
+  if (popEditKind === "carousel") return;
   const k = e.target.closest("[data-ckind]");
   if (k){ b.props.kind = k.dataset.ckind; rerenderBlock(chartEditId); renderChartEdit(); return; }
   const del = e.target.closest("[data-cdel]");
   if (del){ if ((b.props.rows || []).length > 1){ b.props.rows.splice(+del.dataset.cdel, 1); rerenderBlock(chartEditId); renderChartEdit(); } return; }
   if (e.target.closest("[data-cadd]")){ (b.props.rows = b.props.rows || []).push({ l:"新規", v:0 }); rerenderBlock(chartEditId); renderChartEdit(); }
 });
+chartEdit.addEventListener("change", e => {
+  if (popEditKind !== "carousel") return;
+  const opt = e.target.closest("[data-car-opt]");
+  if (!opt) return;
+  const b = doc.blocks[findIdx(chartEditId)];
+  if (!b) return;
+  const key = opt.dataset.carOpt;
+  const on = !!opt.checked;
+  if (key === "loop" && on && !profileAllows(doc.profile, "carousel", { loop:true })){
+    opt.checked = false;
+    const ok = confirm("ループには「ややゆるめ」向きが必要です。向きを変更しますか？");
+    if (!ok) return;
+    if (!setProfile("standard")) return;
+    opt.checked = true;
+  }
+  b.props[key] = !!opt.checked;
+  rerenderBlock(chartEditId);
+  renderCarouselEdit();
+});
 chartEdit.addEventListener("input", e => {
+  if (popEditKind === "carousel") return;
   const inp = e.target.closest("[data-crow]");
   if (!inp) return;
   const b = doc.blocks[findIdx(chartEditId)];
@@ -2310,7 +2519,7 @@ chartEdit.addEventListener("input", e => {
 
 /* ---- メディア（画像・動画・PDF）の取り込み ---- */
 const mediaInput = $("#media-in");
-let mediaTarget = null;   // { blockId } … 既存ブロックへ流し込む
+let mediaTarget = null;   // { blockId, field, path? }
 
 const readFile = f => new Promise(res => {
   const r = new FileReader();
@@ -2321,8 +2530,8 @@ function sizeGuard(f){
   if (f.size > 8 * 1024 * 1024) toast("大きいファイルです — 自動保存が効かない場合があります（書き出しは可能）");
 }
 
-function openMediaDialog(type, blockId, field){
-  mediaTarget = { blockId, field: field || "src" };
+function openMediaDialog(type, blockId, field, path){
+  mediaTarget = { blockId, field: field || "src", path: path || null };
   mediaInput.accept = (REG[type] && REG[type].media) || "image/*";
   mediaInput.click();
 }
@@ -2335,7 +2544,8 @@ mediaInput.addEventListener("change", async e => {
   const b = doc.blocks[findIdx(mediaTarget.blockId)];
   if (!b) return;
   const prev = snap();
-  b.props[mediaTarget.field] = src;
+  if (mediaTarget.path) setPath(b.props, mediaTarget.path, src);
+  else b.props[mediaTarget.field] = src;
   pushUndo(prev); save(); flipRender();
   mediaTarget = null;
 });
@@ -2787,11 +2997,35 @@ async function downloadBlobAs(blob, titleOrStem, ext){
 }
 
 /* ブロック文書 → 配布用HTML（1枚） */
+function carouselExportBoot(){
+  return `<script>(function(){
+function step(track,dir){
+  var slide=track.querySelector(".car-slide");
+  if(!slide)return;
+  var gap=parseFloat(getComputedStyle(track).columnGap||getComputedStyle(track).gap)||0;
+  var unit=slide.getBoundingClientRect().width+gap;
+  var max=Math.max(0,track.scrollWidth-track.clientWidth);
+  var next=track.scrollLeft+dir*unit;
+  if(next>max+4)next=0;
+  else if(next<-4)next=max;
+  track.scrollTo({left:next,behavior:"smooth"});
+}
+document.addEventListener("click",function(e){
+  var btn=e.target.closest("[data-car-nav]");
+  if(!btn)return;
+  var root=btn.closest("[data-car-loop]");
+  if(!root)return;
+  var track=root.querySelector(".car-track");
+  if(track)step(track,+btn.getAttribute("data-car-nav")||1);
+});
+})();<\/script>`;
+}
 function buildBlocksHTML(){
   const css = $("#doc-style").textContent;
   const body = doc.blocks.map(b => REG[b.type].render(b.props, true)).join("\n");
   const title = (doc.blocks.find(b => b.type === "hero")?.props.title || "document").replace(/\s+/g, " ").trim().slice(0, 60);
   const json = snap().replace(/</g, "\\u003c");
+  const needCarJs = doc.blocks.some(b => b.type === "carousel" && b.props && b.props.loop);
   const html = `<!doctype html>
 <html lang="ja">
 <head>
@@ -2810,6 +3044,7 @@ ${body}
 </main>
 <!-- Hatlierで再編集できる編集データ。エディタの「開く」からこのファイルを読み込めます -->
 <script type="application/json" id="hatlier-doc">${json}<\/script>
+${needCarJs ? carouselExportBoot() : ""}
 </body>
 </html>`;
   return { html, title: safeFilename(title, "document") };
@@ -3422,6 +3657,23 @@ function propsFromEl(type, el){
     props.label = props.label || "";
     props.url = props.url || "";
   }
+  if (type === "carousel"){
+    props.loop = el.hasAttribute("data-car-loop");
+    props.showNumbers = el.hasAttribute("data-car-nums") || !!el.querySelector(".car-num");
+    const slides = [...el.querySelectorAll(".car-slide")];
+    props.items = slides.map((slide, i) => {
+      const it = Object.assign({ h:"", t:"", src:"", url:"", label:"" }, (props.items && props.items[i]) || {});
+      const img = slide.querySelector(".car-fig img") || slide.querySelector("img");
+      it.src = img ? (img.getAttribute("src") || "") : "";
+      const a = slide.querySelector("a.car-link");
+      if (a){
+        it.url = a.getAttribute("href") || it.url || "";
+        it.label = a.textContent.trim() || it.label || "";
+      }
+      return it;
+    });
+    return normalizeCarouselProps(props);
+  }
   return props;
 }
 
@@ -3507,7 +3759,7 @@ function ingestHTML(text, opts){
     if (!opts || !opts.quiet){
       toast(c.how === "json" ? INGEST_MSG.json : INGEST_MSG.dom);
     }
-    const bad = doc.blocks.filter(b => !profileAllows(doc.profile, b.type));
+    const bad = doc.blocks.filter(b => !profileAllowsBlock(doc.profile, b));
     if (bad.length){
       setTimeout(() => toast(`いまの向き（${profileLabel(doc.profile)}）と合わない部品が ${bad.length} 個あります`), 400);
     }
