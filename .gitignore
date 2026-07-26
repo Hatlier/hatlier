@@ -13,3 +13,13 @@ atelier - コピー*.html
 node_modules/
 dist/
 .cache/
+
+# Demo recorder outputs (regenerate with: py demos/record_core_edit.py)
+demos/out/
+
+# Local Playwright browser cache for demos
+.pw-browsers/
+
+# Python bytecode
+__pycache__/
+*.pyc
