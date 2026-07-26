@@ -1,0 +1,14 @@
+{
+  "name": "hatlier",
+  "version": "0.5.2",
+  "private": true,
+  "description": "Hatlier — single-file browser editor. This package.json exists only for dev/test tooling; the product itself is dependency-free (hatlier.html).",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0"
+  }
+}

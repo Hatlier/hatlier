@@ -815,7 +815,7 @@ body.freemode .free-wrap{display:block}
 <header class="topbar">
   <div class="brand">
     <span class="dot"></span>Hatlier
-    <a class="ver" id="app-ver" href="https://github.com/Hatlier/hatlier/blob/main/ROADMAP.md" target="_blank" rel="noopener" title="バージョンと開発予定（ROADMAP）">v0.5.1</a>
+    <a class="ver" id="app-ver" href="https://github.com/Hatlier/hatlier/blob/main/ROADMAP.md" target="_blank" rel="noopener" title="バージョンと開発予定（ROADMAP）">v0.5.2</a>
   </div>
   <button class="txtbtn" id="btn-new" title="テンプレートから新しい文書を作る">新規</button>
   <button class="txtbtn" id="btn-open" title="Hatlierで書き出したHTML、またはHatlier形式のHTMLを読み込んで編集">開く</button>
@@ -1000,7 +1000,7 @@ body.freemode .free-wrap{display:block}
 const $  = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const uid = () => "b" + Math.random().toString(36).slice(2, 9);
-const HATLIER_VERSION = "0.5.1";
+const HATLIER_VERSION = "0.5.2";
 const STORE_KEY = "hatlier.v1";
 const STORE_KEY_LEGACY = "atelier.v1";
 const FREE_KEY = "hatlier.free.v1";
@@ -2214,7 +2214,7 @@ canvas.addEventListener("click", e => {
 document.addEventListener("click", e => {
   if (!e.target.closest(".palette") && !e.target.closest(".ins")) closePalette();
   if (!e.target.closest("#design") && !e.target.closest("#btn-design")) closeDesign();
-  if (!e.target.closest("#chartedit") && !e.target.closest('[data-act="chartedit"]')) closeChartEdit();
+  if (!e.target.closest("#chartedit") && !e.target.closest('[data-act="chartedit"]') && !e.target.closest('[data-act="caredit"]')) closeChartEdit();
   if (!e.target.closest("#canvas") && !e.target.closest(".topbar") && !e.target.closest("#design") && !e.target.closest("#chartedit")) select(null);
 });
 
@@ -4354,6 +4354,101 @@ try {
 render();
 syncHistoryBtns();
 
+/* ============================================================
+   テスト用フック（本体の挙動は変えない。UIスモークテストから使う）
+   window.__hatlier … 内部状態・関数への読み取り口
+   window.__hatlierSelfTest() … 依存ゼロの自己診断（ロジック破綻の検出）
+   ============================================================ */
+window.__hatlier = {
+  version: HATLIER_VERSION,
+  get doc(){ return doc; },
+  get freeMode(){ return freeMode; },
+  REG,
+  PROFILES,
+  uid,
+  snap,
+  migrate,
+  render,
+  flipRender,
+  insertBlock,
+  setProfile,
+  buildBlocksHTML,
+  parseDom,
+  defaultDoc,
+  allowedBlockTypes,
+  profileAllows,
+  needsOf,
+  blockTypes: () => Object.keys(REG),
+  loadDoc(next){ doc = migrate(next); save(); flipRender(); },
+  reset(){ doc = migrate(defaultDoc()); save(); flipRender(); },
+};
+
+window.__hatlierSelfTest = function(){
+  const results = [];
+  const ok = (name, cond, detail) => results.push({ name, pass: !!cond, detail: detail || "" });
+  const saved = snap();
+  try {
+    for (const type of Object.keys(REG)){
+      try {
+        const def = REG[type];
+        const html = def.render(def.defaults ? def.defaults() : {}, true);
+        ok("render:" + type, typeof html === "string" && html.indexOf("blk") !== -1);
+      } catch(e){ ok("render:" + type, false, e && e.message); }
+    }
+    try {
+      doc = migrate({
+        theme:"paper", bg:"plain", font:"elegant", profile:"standard",
+        blocks: Object.keys(REG).map(t => ({ id:uid(), type:t, props: REG[t].defaults() })),
+      });
+      const built = buildBlocksHTML();
+      const parsed = parseDom(built.html);
+      ok("roundtrip:parse", parsed && Array.isArray(parsed.blocks));
+      ok("roundtrip:count", parsed && parsed.blocks.length === doc.blocks.length,
+        parsed ? parsed.blocks.length + "/" + doc.blocks.length : "no parse");
+    } catch(e){ ok("roundtrip", false, e && e.message); }
+    ok("profile:safe-blocks-loop-carousel", !profileAllows("safe", "carousel", { loop:true }));
+    ok("profile:safe-allows-static-carousel", profileAllows("safe", "carousel", { loop:false }));
+    ok("profile:standard-allows-loop", profileAllows("standard", "carousel", { loop:true }));
+
+    /* UIの結線チェック：ボタンを実際にクリックしてパネルが開くか
+       （今回のような「押しても開かない」系の回帰を検出する） */
+    const isOpen = sel => {
+      const el = document.querySelector(sel);
+      return !!el && getComputedStyle(el).display !== "none";
+    };
+    const oneBlockDoc = type => migrate({
+      theme:"paper", bg:"plain", font:"elegant", profile:"standard",
+      blocks:[{ id:uid(), type, props: REG[type].defaults() }],
+    });
+    try {
+      doc = oneBlockDoc("carousel"); render();
+      document.querySelector('.bw [data-act="caredit"]')?.click();
+      ok("ui:carousel-panel-opens", isOpen("#chartedit"));
+      closeChartEdit();
+
+      doc = oneBlockDoc("chart"); render();
+      document.querySelector('.bw [data-act="chartedit"]')?.click();
+      ok("ui:chart-panel-opens", isOpen("#chartedit"));
+      closeChartEdit();
+
+      document.querySelector("#btn-design")?.click();
+      ok("ui:design-panel-opens", isOpen("#design"));
+      const profBtns = document.querySelectorAll("#design [data-profile-id]");
+      ok("ui:design-has-3-profiles", profBtns.length === 3, String(profBtns.length));
+      closeDesign();
+    } catch(e){ ok("ui", false, e && e.message); }
+  } finally {
+    doc = JSON.parse(saved);
+    render();
+  }
+  const failed = results.filter(r => !r.pass);
+  (failed.length ? console.error : console.log)(
+    "[Hatlier selftest] " + (results.length - failed.length) + "/" + results.length + " passed",
+    failed
+  );
+  return { total: results.length, failed: failed.length, results };
+};
+
 /* 前回フリー編集モードで終えていたら、その続きから再開 */
 let bootFree = null;
 try { if (modeLoad() === "free") bootFree = freeLoadRaw(); } catch {}
@@ -4371,6 +4466,25 @@ if (!seen && !bootFree){
   try { localStorage.setItem(SEEN_KEY, "1"); } catch {}
   openTemplates();
 }
+
+/* ?selftest を付けて開くと、依存なしでUI破綻チェックを自動実行して結果を上部に表示 */
+try {
+  if (/(?:^|[?&])selftest\b/.test(location.search)){
+    const r = window.__hatlierSelfTest();
+    const bar = document.createElement("div");
+    bar.style.cssText =
+      "position:fixed;left:0;right:0;top:0;z-index:9999;padding:10px 16px;font:600 13px system-ui,sans-serif;" +
+      "color:#fff;background:" + (r.failed ? "#C0392B" : "#127D63") + ";box-shadow:0 2px 10px rgba(0,0,0,.25)";
+    const head = "Hatlier selftest: " + (r.total - r.failed) + "/" + r.total + " passed" + (r.failed ? " — FAILED" : " ✓");
+    const list = r.failed
+      ? "<div style='margin-top:6px;font-weight:400;font-size:12px'>" +
+        r.results.filter(x => !x.pass).map(x => "✗ " + x.name + (x.detail ? " (" + esc(x.detail) + ")" : "")).join("<br>") +
+        "</div>"
+      : "";
+    bar.innerHTML = head + list;
+    document.body.appendChild(bar);
+  }
+} catch(e){ console.error("selftest failed to run", e); }
 </script>
 </body>
 </html>
