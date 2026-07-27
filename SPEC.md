@@ -1,7 +1,7 @@
 # Hatlier — 開発方向性・仕様書（ドラフト）
 
 > 議論用の生きた文書。確定事項と未決事項を分けて書く。  
-> 最終更新: 2026-07-22（MVP A/B: 貼る・localStorage保存）
+> 最終更新: 2026-07-27（Format Core v1.0 をフォーマット正本に）
 
 ---
 
@@ -209,7 +209,8 @@ MVPは **1HTMLを完璧に近く**、ZIPは Step 2 で「載せる」とセッ�
 
 ## 6. フォーマット契約（議論の核）
 
-
+**正本:** [`FORMAT-CORE-v1.md`](./FORMAT-CORE-v1.md)（不変条件・正本 JSON・互換 API）。  
+拡張議論: [`FORMAT-v2.md`](./FORMAT-v2.md)。
 
 ### 6.1 ブロックモード
 
@@ -217,20 +218,18 @@ MVPは **1HTMLを完璧に近く**、ZIPは Step 2 で「載せる」とセッ�
 - 決まった `class` / `data-*` / タグ構造
 - 編集箇所は `data-edit` などで明示
 - 書き出しと「開く」で往復できる
-
-
+- 配布は 1 HTML、**互換の正本は埋め込み `#hatlier-doc`**
 
 ### 6.2 フリーモード
 
 - 取り込んだ HTML が正本
 - 触れる範囲はテキスト・画像・リンクに限定
 
+### 6.3 未決 → 進行中
 
-
-### 6.3 未決
-
-- [ ] フォーマットのバージョン明示（`data-hatlier-version` 等。移行期は旧名も可）
-- [ ] 書き出しプロファイル（文書のみ / 再編集可能 / など）
+- [x] Format Core v1.0 文書（共通不変条件・API）
+- [ ] フォーマットのバージョン明示（`schema` / `data-hatlier-version`。移行期は旧 flat JSON も可）
+- [ ] 書き出しプロファイルの完成（`rich` 等）
 - [ ] コミュニティ部品の登録規約（後段の fetch 部品含む）
 - [ ] フリー → ブロックへの昇格を目指すか（難易度高・MVP外）
 
@@ -273,12 +272,12 @@ MVPは **1HTMLを完璧に近く**、ZIPは Step 2 で「載せる」とセッ�
 | A. AI→貼り付け動線 | 「貼る」で厳密判定（ブロック or フリー） | **実装済** |
 | B. 途中保存の明示 | 「保存」＝ localStorage（⌘S） | **実装済** |
 | C. 書き出しメニュー | HTML / ZIP / PDF / PNG / WebM / スライドWebM | **実装済（v0.3.0）** |
-| D. 手触り・動線の研磨 | D1–D4 実装済。続きは ROADMAP。仕様草案: [`FORMAT-v2.md`](./FORMAT-v2.md) | **進行中** |
+| D. 手触り・動線の研磨 | D1–D4 実装済。続きは ROADMAP。フォーマット正本: [`FORMAT-CORE-v1.md`](./FORMAT-CORE-v1.md) | **進行中** |
 | （横断）バージョン＋予定の見える化 | 画面 `vX.Y.Z` → ROADMAP | **実装済** |
 
 ### Step 1.5 以降（ROADMAP で並行検討）
 
-詳細は [`FORMAT-v2.md`](./FORMAT-v2.md) / [`ROADMAP.md`](./ROADMAP.md)
+詳細は [`FORMAT-CORE-v1.md`](./FORMAT-CORE-v1.md) / [`FORMAT-v2.md`](./FORMAT-v2.md) / [`ROADMAP.md`](./ROADMAP.md)
 
 1. **フォーマット拡張** — shell / region、カルーセル・サイドバー等。レスポンシブ維持
 2. **出力プロファイル** — 新規時に CSP強などを選び部品を制限
@@ -555,6 +554,7 @@ hatlier/                 … リポ名イメージ（ローカル作業ツリー
 | 2026-07-22 | MVP A/B実装方針: 貼る＝厳密判定、保存＝localStorage。Driveは可能だがStep2 |
 | 2026-07-22 | v0.2.0: 画面にバージョン、書き出しメニュー（HTML/ZIP）。PDF等は予告 |
 | 2026-07-22 | v0.3.0: PDF/PNG/WebM/スライドWebM。ROADMAP で予定を見える化 |
+| 2026-07-27 | Format Core v1.0（[`FORMAT-CORE-v1.md`](./FORMAT-CORE-v1.md)）をフォーマット正本に。SPEC §6 を追随 |
 
 
 ---

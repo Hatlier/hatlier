@@ -53,6 +53,7 @@ MVPの「直す → 保存 → 書き出す」はだいたい揃った。
 
 | 版 | 日付 | ひとこと |
 |---|---|---|
+| **0.6.0** | 2026-07-27 | Format Core 実装着手: `format`/`schema` 明示、未知部品保持、parse/migrate/render/roundTrip API。仕様正本 [`FORMAT-CORE-v1.md`](./FORMAT-CORE-v1.md) |
 | **0.5.9** | 2026-07-27 | 構図 `split`（メイン＋サイド）。幅比・左右は列挙のみ。モバイルは縦折り。自由配置なし |
 | **0.5.8** | 2026-07-27 | 画像・動画の表示枠（全幅/広め/半分/小さめ＋寄せ）。角ドラッグはプリセットにスナップ。自由配置は見送り |
 | **0.5.7** | 2026-07-27 | カレンダー月↔タイトル連動、タブ4 variants、タブ/トグル/FAQに画像スロット（Notion級入れ子は未） |
@@ -86,7 +87,7 @@ MVPの「直す → 保存 → 書き出す」はだいたい揃った。
   - [x] 5. 新規ウィザード（目的＋出口 → テンプレ）
   - [ ] 既定テーマ／ブロック質感のさらなる磨き（継続）
 
-仕様の大きな次: [`FORMAT-v2.md`](./FORMAT-v2.md)（フォーマット拡張＋出力プロファイル）
+仕様の大きな次: [`FORMAT-CORE-v1.md`](./FORMAT-CORE-v1.md)（フォーマット共通契約）／拡張は [`FORMAT-v2.md`](./FORMAT-v2.md)
 
 ---
 
@@ -216,7 +217,9 @@ Hatlier の強みは **崩れない・直せる・1HTML**。SPO 等の制約付�
 ### 検討バックログ（実装は仕様合意後）
 
 - [x] **構図 `split`（0.5.9）** — メイン縦積み＋サイド1列。幅比 `2-1`/`1-1`/`1-2`、左右 `end`/`start`。モバイルは縦折り。自由配置なし
-- [ ] フォーマット v2 の骨子（`data-hatlier-version` 明示など。shell / region は split で着手済）
+- [x] **Format Core v1.0（文書）** — [`FORMAT-CORE-v1.md`](./FORMAT-CORE-v1.md)。不変条件・正本JSON・互換API
+- [x] **Format Core 実装（0.6.0）** — schema 明示・未知部品プレースホルダ保持・Core API。入れ子書出は後続
+- [ ] フォーマット v2 の骨子（入れ子 `doc.components` 書出、JSON Schema 同梱など）
 - [x] 部品: カルーセル（CSS scroll-snap, 0.5.0）
 - [x] 部品: タブ（CSS radio, 0.5.5）
 - [ ] 部品: サイドバー付きシェル、ハンバーガー（`split` の後）
@@ -274,13 +277,14 @@ CSPは実質 **強（safe）／弱（standard）**。選び方はユーザが迷
 
 ## Next（手触りの直後〜並行）— 実装本線
 
-[`FORMAT-v2.md`](./FORMAT-v2.md) の §8 は合意済み。**Phase 0–1（0.4.0）・マイテンプレ＋carousel（0.5.0）実装済み**。次:
+[`FORMAT-CORE-v1.md`](./FORMAT-CORE-v1.md) をフォーマット正本に固定。[`FORMAT-v2.md`](./FORMAT-v2.md) の §8 は合意済み。**Phase 0–1（0.4.0）・マイテンプレ＋carousel（0.5.0）・split（0.5.9）実装済み**。次:
 
 1. ~~**次の一本を堅実に:** `split`~~ **済（0.5.9）**
 2. ~~tabs（CSS / details 優先）~~ **済（0.5.5）**
-3. `needs:["js"]` 部品が増えたときの見え方磨き
-4. マイテンプレの入出力（JSON受け渡し）
-5. `sidebar` / `topnav` は `split` の経験を見てから
+3. ~~Format Core に沿った `schema` 明示と unknown preservation の実装強化~~ **済（0.6.0）** — 入れ子書出・JSON Schema は後続
+4. `needs:["js"]` 部品が増えたときの見え方磨き
+5. マイテンプレの入出力（JSON受け渡し）
+6. `sidebar` / `topnav` は `split` の経験を見てから
 
 書き出しの磨き（PDF余白、AGIF、置き場導線）は隙間で可。手触り D5〜 も同様。
 

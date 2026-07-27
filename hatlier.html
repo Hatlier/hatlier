@@ -506,6 +506,12 @@ mark.ps-hit{background:color-mix(in srgb,var(--accent) 35%,transparent);color:in
 .b-closing h2{font-family:var(--f-head);font-weight:600;font-size:24px;line-height:1.7;margin-bottom:13px}
 .b-closing p{color:var(--muted);font-size:13px;letter-spacing:.05em}
 
+/* 未知部品（Format Core: 編集できなくてもデータは保持） */
+.b-unknown{border:1px dashed color-mix(in srgb,var(--muted) 55%,transparent);border-radius:12px;padding:22px 20px;background:color-mix(in srgb,var(--surface) 88%,var(--muted))}
+.b-unknown .unknown-label{font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--muted);margin-bottom:6px}
+.b-unknown .unknown-kind{font-size:14px;color:var(--ink)}
+.b-unknown code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13px}
+
 /* 書き出しHTML専用（エディタでは .page を使わない） */
 .page{max-width:var(--page-max,840px);width:100%;margin:0 auto;padding:44px var(--page-pad-x,36px) 80px;box-sizing:border-box}
 .doc[data-width="full"] .page{max-width:none}
@@ -1296,7 +1302,10 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt
 /* src / href 用。data-URI や https URL を属性に安全に入れる */
 const escAttrUrl = s => esc(s);
 const uid = () => "b" + Math.random().toString(36).slice(2, 9);
-const HATLIER_VERSION = "0.5.9";
+const HATLIER_VERSION = "0.6.0";
+/* Format Core: 文書 schema（エディタ版 HATLIER_VERSION とは別）。破壊的変更のときだけ上げる */
+const HATLIER_FORMAT = "hatlier";
+const HATLIER_SCHEMA = 1;
 const STORE_KEY = "hatlier.v1";
 const STORE_KEY_LEGACY = "atelier.v1";
 const FREE_KEY = "hatlier.free.v1";
@@ -1784,6 +1793,7 @@ function normalizeProfile(id){
 }
 function profileLabel(id){ return profileDef(id).label; }
 function needsOf(type, props){
+  if (!REG[type]) return []; /* 未知 kind: needs 不明 → 落とさず保持（profile 削除の対象にしない） */
   const n = REG[type] && REG[type].needs;
   const out = Array.isArray(n) ? n.slice() : [];
   if (type === "carousel" && props && props.loop) out.push("js");
@@ -2778,25 +2788,25 @@ const REG = {
 
 /* ---- 初期ドキュメント（このツール自身の説明＝チュートリアル） ---- */
 function defaultDoc(){
-  return { theme:"paper", bg:"plain", font:"elegant", profile:"safe", width:"default", blocks:[
-    { id:uid(), type:"hero", props:{
+  return { format:HATLIER_FORMAT, schema:HATLIER_SCHEMA, theme:"paper", bg:"plain", font:"elegant", profile:"safe", width:"default", blocks:[
+    { id:uid(), type:"hero", kind:"hero", version:1, props:{
       variant:"display",
       kicker:"HATLIER — SINGLE FILE EDITOR",
       title:"この文書は、直接クリックして編集できます",
       lede:"文字の上でクリックすれば、その場で書き換え。ブロックの左に出る ⋮⋮ をつかんでドラッグすれば並べ替え。ブロックの境目に出る ＋ で追加。画像はスクリーンショットを ⌘V で貼るだけ。仕上がったら右上の「HTML書き出し」で、そのまま配布できるHTMLが1枚出てきます。" }},
-    { id:uid(), type:"stats", props:{ items:[
+    { id:uid(), type:"stats", kind:"stats", version:1, props:{ items:[
       {v:"1", l:"ファイル。アプリも文書も、このHTML1枚に入っています"},
       {v:"0", l:"サーバー・アカウント・AI。ぜんぶ不要、ブラウザだけで動きます"},
       {v:"∞", l:"配布。書き出したファイルは誰に送ってもそのまま開けます"} ]}},
-    { id:uid(), type:"cols", props:{ items:[
+    { id:uid(), type:"cols", kind:"cols", version:1, props:{ items:[
       {h:"公開はHTMLのまま", t:"書き出したファイルはそのままWebで配布できます。中に編集データを同梱しているので、「開く」から読み込めば再編集もできます。"},
       {h:"編集はブロック単位", t:"自由配置はあえてありません。決められたパーツに流し込むだけだから、誰が触っても崩れない・ダサくならない。"} ]}},
-    { id:uid(), type:"steps", props:{ items:[
+    { id:uid(), type:"steps", kind:"steps", version:1, props:{ items:[
       {h:"書く", t:"テキストをクリックして、内容を自分のものに差し替える。"},
       {h:"並べる", t:"ドラッグで順番を入れ替え、＋でブロックを足す。"},
       {h:"書き出す", t:"右上のボタンでHTML1枚に。配るのも公開するのも自由。"} ]}},
-    { id:uid(), type:"quote", props:{ q:"機能が2割、手触りが8割。", who:"— このプロトタイプの設計方針" }},
-    { id:uid(), type:"closing", props:{ h:"気に入らない場所を、いま書き換えてみてください", t:"配色・背景・フォントは上部の ● と「デザイン」から。⌘Z（Ctrl+Z）でいつでも戻せます。" }},
+    { id:uid(), type:"quote", kind:"quote", version:1, props:{ q:"機能が2割、手触りが8割。", who:"— このプロトタイプの設計方針" }},
+    { id:uid(), type:"closing", kind:"closing", version:1, props:{ h:"気に入らない場所を、いま書き換えてみてください", t:"配色・背景・フォントは上部の ● と「デザイン」から。⌘Z（Ctrl+Z）でいつでも戻せます。" }},
   ]};
 }
 
@@ -2855,8 +2865,83 @@ const TEMPLATES = [
   ]}) },
 ];
 
-/* ---- 旧形式の移行 ---- */
-function migrate(d){
+/* ---- Format Core: 旧形式・Core 形の移行（未知キー／未知部品は落とさない） ---- */
+function blockKind(b){
+  return (b && (b.type || b.kind)) || "";
+}
+function isKnownBlock(b){
+  return !!REG[blockKind(b)];
+}
+/* Core schema 入れ子 → 現行 flat（移行期間の内部形）。未知の doc キーは可能な範囲で保持 */
+function flattenCoreDoc(core){
+  const root = core && typeof core === "object" ? core : {};
+  const nested = root.doc && typeof root.doc === "object" ? root.doc : {};
+  const layout = nested.layout && typeof nested.layout === "object" ? nested.layout : {};
+  const appearance = nested.appearance && typeof nested.appearance === "object" ? nested.appearance : {};
+  const comps = Array.isArray(nested.components) ? nested.components
+    : Array.isArray(root.components) ? root.components
+    : Array.isArray(root.blocks) ? root.blocks
+    : [];
+  const out = {
+    format: root.format || HATLIER_FORMAT,
+    schema: root.schema,
+    theme: appearance.theme || nested.theme || root.theme || "paper",
+    bg: appearance.bg || nested.bg || root.bg || "plain",
+    font: appearance.font || nested.font || root.font || "elegant",
+    cvd: appearance.cvd != null ? appearance.cvd : (nested.cvd != null ? nested.cvd : root.cvd),
+    profile: nested.profile != null ? nested.profile : root.profile,
+    width: layout.width != null ? layout.width : (nested.width != null ? nested.width : root.width),
+    shell: layout.shell || nested.shell || root.shell,
+    blocks: comps.map(c => {
+      if (!c || typeof c !== "object") return null;
+      const kind = c.kind || c.type || "";
+      return {
+        id: c.id,
+        type: kind,
+        kind,
+        version: c.version,
+        region: c.region,
+        props: c.props && typeof c.props === "object" ? c.props : {},
+        semantic: c.semantic,
+        appearance: c.appearance,
+        children: c.children,
+        meta: c.meta,
+        unknown: c.unknown,
+      };
+    }).filter(Boolean),
+  };
+  if (nested.meta != null) out.meta = nested.meta;
+  if (root.meta != null && out.meta == null) out.meta = root.meta;
+  /* ルートの未知キーを保持（format/schema/doc 以外） */
+  Object.keys(root).forEach(k => {
+    if (k === "format" || k === "schema" || k === "doc" || k === "components" || k === "blocks") return;
+    if (out[k] === undefined) out[k] = root[k];
+  });
+  return out;
+}
+function liftSemanticAppearance(b){
+  if (!b.props || typeof b.props !== "object") b.props = {};
+  if (b.semantic && typeof b.semantic === "object"){
+    if (b.semantic.variant != null && b.props.variant == null) b.props.variant = b.semantic.variant;
+  }
+  if (b.appearance && typeof b.appearance === "object"){
+    ["space", "frame", "align"].forEach(k => {
+      if (b.appearance[k] != null && b.props[k] == null) b.props[k] = b.appearance[k];
+    });
+  }
+  return b;
+}
+function migrate(d, targetSchema){
+  if (!d || typeof d !== "object") d = {};
+  /* Core 入れ子形を flat に寄せる（中身は落とさない） */
+  if (d.doc && typeof d.doc === "object" && Array.isArray(d.doc.components) && !Array.isArray(d.blocks)){
+    d = flattenCoreDoc(d);
+  } else if (Array.isArray(d.components) && !Array.isArray(d.blocks)){
+    d.blocks = d.components;
+  }
+  d.format = HATLIER_FORMAT;
+  const want = targetSchema == null ? HATLIER_SCHEMA : (+targetSchema || HATLIER_SCHEMA);
+  d.schema = want;
   d.bg = d.bg || "plain";
   d.font = d.font || "elegant";
   d.profile = normalizeProfile(d.profile);
@@ -2864,14 +2949,28 @@ function migrate(d){
   d.cvd = normalizeCvd(d.cvd);
   d.shell = normalizeShell(d.shell);
   d.blocks = (d.blocks || []).map(b => {
+    if (!b || typeof b !== "object") return null;
+    if (!b.type && b.kind) b.type = b.kind;
+    if (!b.kind && b.type) b.kind = b.type;
+    if (!b.id) b.id = uid();
+    if (b.version == null || b.version === "") b.version = 1;
+    else b.version = +b.version || 1;
+    liftSemanticAppearance(b);
+    /* 未知 kind: 正規化だけして返す（REG に無くても保持） */
+    if (!REG[b.type]){
+      if (!b.props || typeof b.props !== "object") b.props = {};
+      b.region = normalizeRegion(b.region);
+      if (d.shell.type === "stack") b.region = "main";
+      return b;
+    }
     if (b.type === "twocol"){
-      return { id:b.id, type:"cols", props:{ items:[ {h:b.props.a.h, t:b.props.a.t}, {h:b.props.b.h, t:b.props.b.t} ] }, region: normalizeRegion(b.region) };
+      return { id:b.id, type:"cols", kind:"cols", version:b.version || 1, props:{ items:[ {h:b.props.a.h, t:b.props.a.t}, {h:b.props.b.h, t:b.props.b.t} ] }, region: normalizeRegion(b.region), semantic:b.semantic, appearance:b.appearance, meta:b.meta, unknown:b.unknown, children:b.children };
     }
     if (b.type === "carousel"){
-      return { id:b.id, type:"carousel", props: normalizeCarouselProps(b.props), region: normalizeRegion(b.region) };
+      b.props = normalizeCarouselProps(b.props);
     }
     if (b.type === "calendar"){
-      return { id:b.id, type:"calendar", props: normalizeCalendarProps(b.props), region: normalizeRegion(b.region) };
+      b.props = normalizeCalendarProps(b.props);
     }
     if ((b.type === "tabs" || b.type === "langs") && b.props && !b.props.rid){
       b.props.rid = uid();
@@ -2881,11 +2980,9 @@ function migrate(d){
       if (b.props.variant !== "analog") b.props.variant = "digital";
     }
     if (b.type === "hero" && b.props){
-      /* variant 未知は表示時フォールバック。ここでは欠落時だけ default を明示 */
       if (b.props.variant == null || b.props.variant === "") b.props.variant = "display";
     }
     if (b.type === "video" && b.props && typeof b.props.src === "string"){
-      /* 旧バグ: codecs=… 付き data-URI はカンマで壊れる → MIME を単純化して救済 */
       const src = b.props.src;
       if (/^data:video\//i.test(src) && /;codecs=/i.test(src.slice(0, 96))){
         const b64 = src.indexOf(";base64,");
@@ -2896,12 +2993,32 @@ function migrate(d){
       }
     }
     b.region = normalizeRegion(b.region);
-    /* stack ではサイド枠を使わない（データを main に寄せる） */
     if (d.shell.type === "stack") b.region = "main";
     return b;
-  });
+  }).filter(Boolean);
   packBlocksByRegion(d);
   return d;
+}
+
+/* Format Core API（ライブラリ化の種。未知情報を落とさない） */
+function parseHatlier(html){
+  const c = classifyHTML(String(html || ""));
+  if (c.kind !== "blocks") return null;
+  return migrate(c.doc);
+}
+function renderHatlier(d){
+  const prev = doc;
+  try {
+    doc = migrate(JSON.parse(JSON.stringify(d)));
+    return buildBlocksHTML().html;
+  } finally {
+    doc = prev;
+  }
+}
+function roundTripHatlier(html){
+  const d = parseHatlier(html);
+  if (!d) return null;
+  return renderHatlier(d);
 }
 
 function setProfile(nextId){
@@ -3092,7 +3209,11 @@ function load(){
     const raw = lsGet(STORE_KEY, STORE_KEY_LEGACY);
     if (!raw) return null;
     const d = JSON.parse(raw);
-    return (d && Array.isArray(d.blocks)) ? migrate(d) : null;
+    if (!d || typeof d !== "object") return null;
+    if (Array.isArray(d.blocks) || (d.doc && Array.isArray(d.doc.components)) || Array.isArray(d.components)){
+      return migrate(d);
+    }
+    return null;
   } catch(e){ return null; }
 }
 function syncHistoryBtns(){
@@ -3131,6 +3252,22 @@ const canvas = $("#canvas");
 
 function blockHTML(b){
   const def = REG[b.type];
+  if (!def){
+    const kind = esc(b.type || b.kind || "?");
+    return `<div class="bw${b.id === selectedId ? " sel" : ""} unknown-bw" data-id="${b.id}" data-region="${regionOf(b)}" data-unknown-kind="${kind}">
+    <div class="grip" data-grip title="ドラッグで移動">
+      <svg width="10" height="17" viewBox="0 0 10 17" fill="currentColor"><circle cx="2.5" cy="3" r="1.5"/><circle cx="7.5" cy="3" r="1.5"/><circle cx="2.5" cy="8.5" r="1.5"/><circle cx="7.5" cy="8.5" r="1.5"/><circle cx="2.5" cy="14" r="1.5"/><circle cx="7.5" cy="14" r="1.5"/></svg>
+    </div>
+    <div class="btools">
+      <button class="tb tb-del" data-act="del" title="削除"><svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3.5h10"/><path d="M5.3 3.5V2.4a.8.8 0 0 1 .8-.8h1.8a.8.8 0 0 1 .8.8v1.1"/><path d="M3.4 3.5l.6 8.1a1 1 0 0 0 1 .9h4a1 1 0 0 0 1-.9l.6-8.1"/></svg></button>
+    </div>
+    <section class="blk b-unknown" data-kind="${kind}" data-space="default">
+      <p class="unknown-label">この版では未対応の部品</p>
+      <p class="unknown-kind"><code>${kind}</code> — データは保持しています（壊していません）</p>
+    </section>
+    <div class="ins" data-region="${regionOf(b)}" title="ブロックを追加"><button class="insbtn">+</button></div>
+  </div>`;
+  }
   const ops = (def.ops || []).map((op, i) =>
     op.can(b.props) ? `<button class="tb tb-op" data-op="${i}" title="${op.tip}">${op.label}</button>` : ""
   ).join("");
@@ -3280,7 +3417,7 @@ function insertBlock(type, index, props, region){
   const prev = snap();
   let reg = normalizeRegion(region != null ? region : pickerRegion);
   if (shellOf(doc).type !== "split") reg = "main";
-  const b = { id:uid(), type, props: props || REG[type].defaults(), region: reg };
+  const b = { id:uid(), type, kind:type, version:1, props: props || REG[type].defaults(), region: reg };
   const abs = absIndexForRegionInsert(reg, index == null ? blocksOf(reg).length : index);
   doc.blocks.splice(abs, 0, b);
   packBlocksByRegion(doc);
@@ -4888,7 +5025,13 @@ document.addEventListener("click",function(e){
 function buildBlocksHTML(){
   const css = $("#doc-style").textContent;
   const shell = shellOf(doc);
-  const renderBlk = b => withBlockOpts(b.type, b.props, REG[b.type].render(b.props, true));
+  const renderBlk = b => {
+    if (!REG[b.type]){
+      const kind = esc(b.type || b.kind || "unknown");
+      return `<section class="blk b-unknown" data-kind="${kind}" data-space="default"><p class="unknown-label">Unsupported block (preserved in editor data)</p><p class="unknown-kind"><code>${kind}</code></p></section>`;
+    }
+    return withBlockOpts(b.type, b.props, REG[b.type].render(b.props, true));
+  };
   let body;
   if (shell.type === "split"){
     const main = blocksOf("main").map(renderBlk).join("\n");
@@ -4921,7 +5064,7 @@ html,body{margin:0;padding:0}
 ${css}
 </style>
 </head>
-<body class="doc" data-theme="${doc.theme}" data-bg="${doc.bg}" data-font="${doc.font}" data-profile="${esc(doc.profile || "safe")}" data-width="${normalizeWidth(doc.width)}" data-cvd="${normalizeCvd(doc.cvd)}" data-shell="${shell.type}" data-ratio="${shell.ratio}" data-side="${shell.side}">
+<body class="doc" data-hatlier-format="${HATLIER_FORMAT}" data-hatlier-schema="${doc.schema || HATLIER_SCHEMA}" data-theme="${doc.theme}" data-bg="${doc.bg}" data-font="${doc.font}" data-profile="${esc(doc.profile || "safe")}" data-width="${normalizeWidth(doc.width)}" data-cvd="${normalizeCvd(doc.cvd)}" data-shell="${shell.type}" data-ratio="${shell.ratio}" data-side="${shell.side}">
 <main class="page" data-shell="${shell.type}" data-ratio="${shell.ratio}" data-side="${shell.side}">
 ${body}
 </main>
@@ -5681,7 +5824,10 @@ function parseHatlierJson(text){
   if (!m) return null;
   try {
     const j = JSON.parse(m[1]);
-    if (j && Array.isArray(j.blocks)) return j;
+    if (!j || typeof j !== "object") return null;
+    if (Array.isArray(j.blocks)) return j;
+    if (j.doc && Array.isArray(j.doc.components)) return j;
+    if (Array.isArray(j.components)) return j;
   } catch {}
   return null;
 }
@@ -6459,6 +6605,8 @@ syncHistoryBtns();
    ============================================================ */
 window.__hatlier = {
   version: HATLIER_VERSION,
+  format: HATLIER_FORMAT,
+  schema: HATLIER_SCHEMA,
   get doc(){ return doc; },
   get freeMode(){ return freeMode; },
   REG,
@@ -6466,6 +6614,9 @@ window.__hatlier = {
   uid,
   snap,
   migrate,
+  parse: parseHatlier,
+  renderDoc: renderHatlier,
+  roundTrip: roundTripHatlier,
   render,
   flipRender,
   insertBlock,
@@ -6481,6 +6632,8 @@ window.__hatlier = {
   allowedBlockTypes,
   profileAllows,
   needsOf,
+  isKnownBlock,
+  blockKind,
   blockTypes: () => Object.keys(REG),
   loadDoc(next){ doc = migrate(next); save(); flipRender(); },
   reset(){ doc = migrate(defaultDoc()); save(); flipRender(); },
@@ -6611,6 +6764,44 @@ window.__hatlierSelfTest = function(){
       ok("shell:json-roundtrip", shellOf(fromJson).type === "split" && blocksOf("side", fromJson).length === 1);
       setShell({ type:"stack" });
       ok("shell:stack-merges-side", shellOf(doc).type === "stack" && doc.blocks.every(b => regionOf(b) === "main"));
+
+      /* Format Core: schema 明示・未知部品保持・API */
+      const coreFlat = migrate({
+        theme:"paper", bg:"plain", font:"elegant", profile:"safe",
+        futureDocFlag: true,
+        blocks:[
+          { id:uid(), type:"text", props:{ h:"a", t:"b", futureProp:42 } },
+          { id:"u1", type:"spacecraft", kind:"spacecraft", version:3, props:{ orbit:"leo" }, region:"main", meta:{ from:"test" } },
+        ],
+      });
+      ok("core:schema", coreFlat.format === "hatlier" && coreFlat.schema === HATLIER_SCHEMA);
+      ok("core:keeps-doc-unknown", coreFlat.futureDocFlag === true);
+      ok("core:keeps-unknown-kind", coreFlat.blocks.some(b => b.type === "spacecraft" && b.props.orbit === "leo"));
+      ok("core:keeps-prop-unknown", coreFlat.blocks.find(b => b.type === "text").props.futureProp === 42);
+      ok("core:block-version", coreFlat.blocks.every(b => b.version >= 1));
+      doc = coreFlat; render();
+      ok("core:ui-unknown-placeholder", !!document.querySelector("#canvas .b-unknown"));
+      const builtCore = buildBlocksHTML();
+      ok("core:export-schema-attr", builtCore.html.indexOf('data-hatlier-schema="1"') !== -1);
+      const rt = roundTripHatlier(builtCore.html);
+      const rtDoc = parseHatlier(rt);
+      ok("core:api-roundtrip", !!rtDoc && rtDoc.blocks.some(b => b.type === "spacecraft" && b.props.orbit === "leo"));
+      ok("core:api-roundtrip-doc-flag", rtDoc && rtDoc.futureDocFlag === true);
+      const nested = migrate({
+        format:"hatlier", schema:1,
+        doc:{
+          profile:"safe",
+          layout:{ shell:{ type:"stack" }, width:"wide" },
+          appearance:{ theme:"noir", bg:"dots", font:"modern", cvd:"none" },
+          components:[
+            { id:"c1", kind:"hero", version:1, semantic:{ variant:"quiet" }, appearance:{ space:"tight" }, props:{ title:"Core", kicker:"", lede:"" } },
+          ],
+        },
+      });
+      ok("core:flatten-nested", nested.theme === "noir" && nested.width === "wide" && nested.blocks[0].type === "hero");
+      ok("core:flatten-semantic", nested.blocks[0].props.variant === "quiet" && nested.blocks[0].props.space === "tight");
+      const renderedNested = renderHatlier(nested);
+      ok("core:render-api", typeof renderedNested === "string" && renderedNested.indexOf("hatlier-doc") !== -1);
 
       /* AI用プロンプトが現行仕様に追従しているか（説明漏れの回帰検出） */
       const prompt = buildPrompt();
