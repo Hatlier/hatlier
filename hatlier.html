@@ -172,11 +172,28 @@
 .steps-flow-line{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;opacity:.6}
 
 /* テーブル */
-.tblwrap{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface)}
-.b-table table{width:100%;border-collapse:collapse}
+.tbl-title{font-size:15px;font-weight:700;letter-spacing:.02em;margin:0 0 10px}
+.tbl-title:empty{display:none}
+.tblwrap{border:1px solid var(--line);border-radius:12px;overflow:auto;background:var(--surface)}
+.b-table table{width:100%;border-collapse:collapse;table-layout:fixed}
+.b-table[data-col-width="auto"] table{width:max-content;min-width:100%;table-layout:auto}
 .b-table th{background:color-mix(in srgb,var(--accent) 7%,var(--surface));text-align:left;font-size:12px;font-weight:700;letter-spacing:.06em;padding:12px 15px;border-bottom:2px solid var(--accent)}
 .b-table td{padding:12px 15px;font-size:13px;line-height:1.75;border-bottom:1px solid var(--line)}
 .b-table tbody tr:last-child td{border-bottom:none}
+/* Excel風（列ABC・行番号。データではない飾り） */
+.b-table[data-sheet="1"] .tblwrap{border-radius:10px}
+.b-table[data-sheet="1"] table{border-collapse:separate;border-spacing:0}
+.b-table .tbl-corner,.b-table .tbl-letter,.b-table .tbl-rownum{
+  background:color-mix(in srgb,var(--ink) 5%,var(--surface));color:var(--muted);
+  font-size:10.5px;font-weight:700;letter-spacing:.04em;text-align:center;
+  padding:6px 8px;border-bottom:1px solid var(--line);border-right:1px solid var(--line);
+  user-select:none;white-space:nowrap
+}
+.b-table .tbl-corner{position:sticky;left:0;z-index:2;min-width:36px;width:36px}
+.b-table .tbl-rownum{position:sticky;left:0;z-index:1;min-width:36px;width:36px;border-bottom:1px solid var(--line)}
+.b-table .tbl-letter{min-width:72px}
+.b-table[data-sheet="1"] thead.tbl-abc th{border-bottom:1px solid var(--line)}
+.b-table[data-sheet="1"] th[data-edit],.b-table[data-sheet="1"] td[data-edit]{border-right:1px solid var(--line)}
 
 /* テキスト */
 .b-text h3{font-size:16px;font-weight:700;letter-spacing:.02em;margin-bottom:8px}
@@ -194,25 +211,36 @@
   border-radius:12px;padding:16px 18px 16px 20px;background:color-mix(in srgb,var(--accent) 6%,var(--surface))
 }
 .b-text[data-variant="bubble"],.b-text[data-variant="bubble-up"]{
-  position:relative;border:1px solid var(--line);border-radius:16px;padding:18px 20px 20px;
-  background:var(--surface);margin-bottom:12px
+  position:relative;border:1.5px solid color-mix(in srgb,var(--ink) 14%,var(--line));
+  border-radius:22px;padding:20px 22px 22px;background:var(--surface);
+  margin-bottom:26px;
+  box-shadow:0 10px 28px -12px color-mix(in srgb,var(--ink) 30%,transparent)
 }
-.b-text[data-variant="bubble-up"]{margin-top:12px;margin-bottom:0}
+.b-text[data-variant="bubble-up"]{margin-top:26px;margin-bottom:0}
 .b-text[data-variant="bubble"]::before,.b-text[data-variant="bubble"]::after,
 .b-text[data-variant="bubble-up"]::before,.b-text[data-variant="bubble-up"]::after{
-  content:"";position:absolute;left:26px;width:0;height:0;pointer-events:none
+  content:"";position:absolute;width:0;height:0;pointer-events:none
 }
+/* しっぽを大きめ・少し傾けて「噴き出し」感を出す */
 .b-text[data-variant="bubble"]::before{
-  bottom:-11px;border-left:11px solid transparent;border-right:11px solid transparent;border-top:11px solid var(--line)
+  left:30px;bottom:-20px;
+  border-left:8px solid transparent;border-right:18px solid transparent;
+  border-top:20px solid color-mix(in srgb,var(--ink) 14%,var(--line))
 }
 .b-text[data-variant="bubble"]::after{
-  bottom:-9px;border-left:10px solid transparent;border-right:10px solid transparent;border-top:10px solid var(--surface)
+  left:33px;bottom:-16px;
+  border-left:6px solid transparent;border-right:15px solid transparent;
+  border-top:16px solid var(--surface)
 }
 .b-text[data-variant="bubble-up"]::before{
-  top:-11px;border-left:11px solid transparent;border-right:11px solid transparent;border-bottom:11px solid var(--line)
+  left:30px;top:-20px;
+  border-left:8px solid transparent;border-right:18px solid transparent;
+  border-bottom:20px solid color-mix(in srgb,var(--ink) 14%,var(--line))
 }
 .b-text[data-variant="bubble-up"]::after{
-  top:-9px;border-left:10px solid transparent;border-right:10px solid transparent;border-bottom:10px solid var(--surface)
+  left:33px;top:-16px;
+  border-left:6px solid transparent;border-right:15px solid transparent;
+  border-bottom:16px solid var(--surface)
 }
 
 /* ToDo */
@@ -330,24 +358,38 @@ a.ctabtn:hover{transform:translateY(-1.5px);box-shadow:0 10px 24px -8px color-mi
 
 /* コード */
 .codebox{background:#15151B;border:1px solid rgba(255,255,255,.07);border-radius:12px;overflow:hidden}
-.codehead{padding:10px 17px;font-size:11px;color:#8A8A96;letter-spacing:.08em;border-bottom:1px solid rgba(255,255,255,.07);font-family:ui-monospace,SFMono-Regular,"Cascadia Mono",Consolas,monospace}
+.codehead{
+  display:flex;align-items:center;gap:10px;padding:10px 17px;
+  font-size:11px;color:#8A8A96;letter-spacing:.08em;border-bottom:1px solid rgba(255,255,255,.07);
+  font-family:ui-monospace,SFMono-Regular,"Cascadia Mono",Consolas,monospace
+}
+.code-lang{
+  flex:none;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:.06em;
+  color:#C8C8D4;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);text-transform:lowercase
+}
+.codehead [data-edit]{flex:1;min-width:0}
 .doc .codebody{padding:17px 19px;color:#E7E7F0;font-size:12.5px;line-height:1.85;font-family:ui-monospace,SFMono-Regular,"Cascadia Mono",Consolas,monospace;white-space:pre-wrap;word-break:break-all}
 
 /* リンクカード */
-.lc{display:flex;align-items:center;gap:16px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px 22px;text-decoration:none;color:inherit;transition:box-shadow .18s ease,transform .18s ease}
+.lc{display:flex;align-items:center;gap:16px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px 22px;text-decoration:none;color:inherit;transition:box-shadow .18s ease,transform .18s ease;width:min(100%,560px);box-sizing:border-box}
 a.lc:hover{box-shadow:0 10px 28px -10px rgba(0,0,0,.22);transform:translateY(-1.5px)}
 .lc-ico{flex:0 0 40px;width:40px;height:40px;border-radius:11px;background:color-mix(in srgb,var(--accent) 13%,var(--surface));color:var(--accent);display:grid;place-items:center}
 .lc-body{display:block;min-width:0}
 .lc-t{display:block;font-size:14.5px;font-weight:700;letter-spacing:.02em}
 .lc-d{display:block;margin-top:4px;color:var(--muted);font-size:12.5px;line-height:1.7}
 .lc-u{display:block;margin-top:7px;color:var(--accent);font-size:11px;letter-spacing:.03em;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;word-break:break-all}
+.b-link{display:flex}
+.b-link[data-align="start"]{justify-content:flex-start}
+.b-link[data-align="center"]{justify-content:center}
+.b-link[data-align="end"]{justify-content:flex-end}
 
 /* メディア（画像・動画・PDF） */
 .fig img{width:100%;display:block;border-radius:12px;border:1px solid var(--line)}
 .med{width:100%;display:block;border-radius:12px;border:1px solid var(--line);background:#000}
 .pdfbox{width:100%;height:500px;display:block;border-radius:12px;border:1px solid var(--line);background:#fff}
 .medcap{margin-top:11px;color:var(--muted);font-size:12px;text-align:center;letter-spacing:.04em}
-.doc .medcap:empty{display:none}
+.doc .tbl-title:empty{display:none}
+#canvas .tbl-title:empty{display:block}
 /* 画像・動画の表示枠（枚举。自由pxは持たない＝レスポンシブ契約） */
 .b-image .fig,.b-video .fig{width:100%;max-width:100%;box-sizing:border-box;position:relative;transition:max-width .18s ease}
 .b-image[data-frame="wide"] .fig,.b-video[data-frame="wide"] .fig{max-width:78%}
@@ -653,19 +695,28 @@ button{font-family:inherit;border:none;background:none;cursor:pointer;color:inhe
 .export-wrap{position:relative}
 .exmenu{
   position:absolute;right:0;top:calc(100% + 8px);z-index:80;
-  min-width:220px;padding:6px;border-radius:12px;
+  min-width:248px;padding:6px;border-radius:12px;
   background:#FBFBFC;border:1px solid rgba(20,20,30,.1);
   box-shadow:0 16px 40px -18px rgba(20,20,30,.45);
-  display:none;
+  display:none;flex-direction:column;gap:2px;
 }
-.exmenu.open{display:block}
+.exmenu.open{display:flex}
 .exmenu button{
   display:block;width:100%;text-align:left;padding:10px 12px;border-radius:8px;
-  font-size:12.5px;color:#1B1B20;line-height:1.35;
+  font-size:12.5px;color:#1B1B20;line-height:1.35;border:1px solid transparent;
+  order:2;
 }
 .exmenu button:hover{background:rgba(20,20,30,.06)}
 .exmenu button:disabled{opacity:.45;cursor:default}
 .exmenu button:disabled:hover{background:none}
+.exmenu button.ex-planned{
+  order:1;background:#F3FAF7;border-color:#127D63;
+  box-shadow:0 0 0 1px rgba(18,125,99,.2);
+}
+.exmenu button.ex-planned .ex-tag{
+  display:inline-block;margin:0 0 4px;padding:2px 7px;border-radius:999px;
+  font-size:10px;font-weight:700;letter-spacing:.04em;color:#fff;background:#127D63;
+}
 .exmenu .ex-sub{display:block;margin-top:2px;font-size:10.5px;color:#8A8A93;font-weight:500}
 .saveas-row{display:flex;align-items:center;gap:0;border:1px solid rgba(20,20,30,.14);border-radius:10px;overflow:hidden;background:#fff}
 .saveas-row input{
@@ -694,38 +745,76 @@ button{font-family:inherit;border:none;background:none;cursor:pointer;color:inhe
 #canvas[data-width="full"]{width:min(100%,96vw);border-radius:10px}
 #canvas[data-shell="split"]{width:min(max(var(--canvas-w,880px),1080px),96vw)}
 /* 書き出し先ガイド（編集画面のみの気配り） */
-#canvas[data-target="png"]{
-  position:relative;
-  box-shadow:0 0 0 2px rgba(27,27,32,.14),0 28px 80px -28px rgba(20,20,30,.28);
+#canvas[data-target="png"],
+#canvas[data-target="pdf"],
+#canvas[data-target="slide"]{position:relative}
+#canvas{--slide-ar:16/9;--pdf-page-h:1123px}
+#canvas[data-artboard="landscape"]{--slide-ar:16/9}
+#canvas[data-artboard="fourthree"]{--slide-ar:4/3}
+#canvas[data-artboard="square"]{--slide-ar:1/1}
+#canvas[data-artboard="portrait"]{--slide-ar:9/16}
+#canvas[data-target="png"] .png-guide-label{
+  position:sticky;top:8px;float:right;z-index:5;margin:0 8px 12px 0;
+  font-size:10.5px;font-weight:700;letter-spacing:.04em;color:#127D63;
+  background:rgba(251,251,252,.96);padding:5px 10px;border-radius:999px;
+  border:1px solid rgba(18,125,99,.28);pointer-events:none;max-width:min(280px,70%)
 }
-#canvas[data-target="png"][data-artboard="landscape"]{width:min(720px,94vw)}
-#canvas[data-target="png"][data-artboard="square"]{width:min(560px,92vw)}
-#canvas[data-target="png"][data-artboard="portrait"]{width:min(420px,90vw)}
-#canvas[data-target="png"]::before{
-  content:"1枚絵のイメージ（PNG）";position:absolute;top:10px;right:14px;z-index:5;
-  font-size:10px;font-weight:700;letter-spacing:.08em;color:#8A8A93;
-  background:rgba(251,251,252,.92);padding:4px 8px;border-radius:999px;pointer-events:none
+#canvas[data-target="pdf"] .pdf-guide-label{
+  position:sticky;top:8px;float:right;clear:both;z-index:6;margin:0 8px 12px 0;
+  font-size:10.5px;font-weight:700;letter-spacing:.04em;color:#B4552D;
+  background:rgba(251,251,252,.96);padding:5px 10px;border-radius:999px;
+  border:1px solid rgba(180,85,45,.35);pointer-events:none
 }
-#canvas[data-target="pdf"]{
-  background-image:repeating-linear-gradient(
-    to bottom,
-    transparent 0,
-    transparent calc(1122px - 1px),
-    rgba(180,85,45,.35) 1122px
-  );
-  background-size:100% 1122px;background-position:0 46px
+#canvas[data-target="pdf"] .pdf-page-stack{
+  position:absolute;left:0;right:0;top:0;z-index:3;pointer-events:none;
 }
-#canvas[data-target="pdf"]::before{
-  content:"PDFのページ目安";position:sticky;top:8px;float:right;z-index:5;margin:0 8px 0 0;
-  font-size:10px;font-weight:700;letter-spacing:.08em;color:#8A8A93;
-  background:rgba(251,251,252,.92);padding:4px 8px;border-radius:999px;pointer-events:none
+#canvas[data-target="pdf"] .pdf-page-band{
+  position:relative;box-sizing:border-box;
+  border-bottom:3px solid rgba(180,85,45,.72);
+  background:
+    linear-gradient(to bottom,rgba(180,85,45,.045),transparent 48px),
+    linear-gradient(to top,rgba(180,85,45,.1),transparent 36px);
 }
-.slide-break{
-  display:flex;align-items:center;gap:12px;margin:18px 0 8px;padding:0 2px;
-  color:#8A8A93;font-size:10.5px;font-weight:700;letter-spacing:.1em;user-select:none;pointer-events:none
+#canvas[data-target="pdf"] .pdf-page-chip{
+  position:absolute;top:10px;left:12px;
+  font-size:10.5px;font-weight:700;letter-spacing:.04em;color:#B4552D;
+  background:rgba(251,251,252,.96);padding:4px 9px;border-radius:999px;
+  border:1px solid rgba(180,85,45,.35)
 }
-.slide-break::before,.slide-break::after{content:"";flex:1;height:1px;background:rgba(20,20,30,.14);border-top:1px dashed rgba(20,20,30,.2)}
-#canvas:not([data-target="slide"]) .slide-break{display:none}
+#canvas[data-target="pdf"] .pdf-page-edge{
+  position:absolute;left:50%;bottom:7px;transform:translateX(-50%);
+  font-size:10px;font-weight:700;letter-spacing:.06em;color:#B4552D;
+  background:rgba(251,251,252,.94);padding:3px 10px;border-radius:999px;
+  border:1px dashed rgba(180,85,45,.45);white-space:nowrap
+}
+/* スライド動画 / PNG複数枚: ブロック＝1枠 */
+.slide-card{
+  margin:0 0 22px;border:1px solid rgba(20,20,30,.12);border-radius:14px;
+  background:color-mix(in srgb,var(--bg) 92%,#fff);
+  box-shadow:0 1px 0 rgba(20,20,30,.04),0 10px 28px -18px rgba(20,20,30,.28);
+  overflow:hidden;
+}
+.slide-card-bar{
+  display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;
+  padding:8px 12px;border-bottom:1px solid rgba(20,20,30,.08);
+  background:rgba(20,20,30,.035);color:#5C5C66;font-size:11px;font-weight:700;letter-spacing:.04em;
+  user-select:none;
+}
+.slide-card-num{color:#1B1B20}
+.slide-card-hint{font-weight:600;color:#8A8A93;letter-spacing:0}
+.slide-card-stage{
+  position:relative;min-height:0;
+  overflow:auto;padding:14px 16px 18px;box-sizing:border-box;
+}
+#canvas[data-target="slide"] .slide-card-stage{
+  aspect-ratio:var(--slide-ar,16/9);min-height:140px;max-height:min(62vh,560px);
+}
+#canvas[data-target="png"][data-png-mode="slices"] .slide-card-stage{
+  aspect-ratio:auto;max-height:none;
+}
+.slide-card-stage > .bw{margin:0}
+#canvas[data-target="slide"] .slide-card-stage > .bw > .ins,
+#canvas[data-target="png"][data-png-mode="slices"] .slide-card-stage > .bw > .ins{margin-bottom:0}
 
 #canvas, #canvas *{transition:background-color .45s ease,color .45s ease,border-color .45s ease,box-shadow .18s ease}
 
@@ -755,6 +844,18 @@ button{font-family:inherit;border:none;background:none;cursor:pointer;color:inhe
 .bw{position:relative}
 .bw:hover .blk{box-shadow:0 0 0 1.5px color-mix(in srgb,var(--accent) 30%,transparent)}
 .bw.sel .blk{box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 55%,transparent)}
+.bkind{
+  position:absolute;left:10px;top:-13px;z-index:4;
+  display:none;align-items:center;gap:5px;max-width:min(52%,220px);
+  padding:3px 8px 3px 5px;border-radius:999px;
+  background:rgba(251,251,252,.96);border:1px solid rgba(20,20,30,.1);
+  box-shadow:0 2px 8px rgba(20,20,30,.1);pointer-events:none;
+  color:#5A5A64;font-size:10.5px;font-weight:700;letter-spacing:.02em;white-space:nowrap;
+}
+.bkind-ico{display:grid;place-items:center;width:16px;height:16px;flex:none;opacity:.75}
+.bkind-ico svg{width:14px;height:14px}
+.bkind-nm{overflow:hidden;text-overflow:ellipsis}
+.bw.sel .bkind{display:inline-flex}
 .grip{
   position:absolute;left:-32px;top:26px;width:22px;height:30px;border-radius:6px;
   display:grid;place-items:center;color:#9A99A2;cursor:grab;opacity:0;
@@ -855,19 +956,60 @@ button{font-family:inherit;border:none;background:none;cursor:pointer;color:inhe
 
 /* デザインパネル */
 .design{
-  position:fixed;z-index:100;display:none;width:380px;padding:16px 16px 14px;
-  max-height:76vh;overflow:auto;
+  position:fixed;z-index:100;display:none;width:min(460px,calc(100vw - 24px));padding:0;
+  max-height:min(82vh,740px);overflow:hidden;
   background:#fff;border-radius:15px;border:1px solid rgba(20,20,30,.07);
   box-shadow:0 24px 70px -14px rgba(20,20,30,.35);
   opacity:0;transform:translateY(6px) scale(.97);
   transition:opacity .16s ease,transform .2s cubic-bezier(.2,.8,.2,1);
 }
-.design.open{display:block}
+.design.open{display:flex;flex-direction:column}
 .design.vis{opacity:1;transform:none}
+.design.dragging{transition:none;user-select:none}
+.design-head{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:12px 14px 10px;border-bottom:1px solid rgba(20,20,30,.08);flex:0 0 auto;
+  cursor:grab;touch-action:none
+}
+.design.dragging .design-head{cursor:grabbing}
+.design-title{font-size:13px;font-weight:700;color:#1B1B20;letter-spacing:.02em}
+.design-title-sub{display:block;margin-top:2px;font-size:10.5px;font-weight:600;color:#8A8A93;letter-spacing:0}
+.design-tabs{
+  display:flex;gap:4px;padding:8px 10px 0;flex:0 0 auto;
+  border-bottom:1px solid rgba(20,20,30,.08);background:#FAFAFB
+}
+.design-tab{
+  flex:1;min-width:0;padding:8px 6px 10px;border:none;background:transparent;cursor:pointer;
+  font:inherit;font-size:12px;font-weight:700;color:#6A6A74;border-radius:8px 8px 0 0;
+}
+.design-tab:hover{color:#1B1B20;background:rgba(20,20,30,.04)}
+.design-tab.on{
+  color:#1B1B20;background:#fff;
+  box-shadow:0 1px 0 #fff, inset 0 -2px 0 #127D63;
+}
+.design-body{padding:12px 16px 14px;overflow:auto;flex:1 1 auto;min-height:0}
 .dlab{font-size:11px;font-weight:700;letter-spacing:.1em;color:#8A8A94;margin:14px 2px 8px}
-.dlab:first-child{margin-top:0}
+.design-body > .dlab:first-child{margin-top:0}
 .dhint{font-size:11px;line-height:1.45;color:#8A8A94;margin:-2px 2px 10px}
 .drow{display:flex;gap:8px;flex-wrap:wrap}
+.page-prev{
+  display:block;width:34px;height:auto;margin:0 0 8px;
+  border:1.5px solid rgba(180,85,45,.5);border-radius:3px;
+  background:rgba(180,85,45,.1)
+}
+.page-prev[data-page="a4"]{aspect-ratio:210/297;width:28px}
+.page-prev[data-page="a4-landscape"]{aspect-ratio:297/210;width:44px}
+.page-prev[data-page="letter"]{aspect-ratio:8.5/11;width:28px}
+.page-prev[data-page="b5"]{aspect-ratio:182/257;width:26px}
+.ar-prev{
+  display:block;width:52px;height:auto;margin:0 0 8px;
+  border:1.5px solid rgba(18,125,99,.45);border-radius:5px;
+  background:rgba(18,125,99,.1)
+}
+.ar-prev[data-ar="landscape"]{aspect-ratio:16/9}
+.ar-prev[data-ar="fourthree"]{aspect-ratio:4/3;width:44px}
+.ar-prev[data-ar="square"]{aspect-ratio:1/1;width:36px}
+.ar-prev[data-ar="portrait"]{aspect-ratio:9/16;width:28px}
 .prow{display:flex;flex-direction:column;gap:6px}
 .popt{
   display:block;width:100%;text-align:left;padding:10px 12px;border-radius:10px;
@@ -1078,7 +1220,7 @@ video#cap-live.no-mirror{transform:none}
 
 /* ドラッグ */
 body.dragging{cursor:grabbing;user-select:none}
-body.dragging .grip,body.dragging .btools,body.dragging .ins{opacity:0!important;pointer-events:none}
+body.dragging .grip,body.dragging .btools,body.dragging .ins,body.dragging .bkind{opacity:0!important;pointer-events:none}
 .bw.drag-src{opacity:.3}
 .ghost{
   position:fixed;z-index:200;pointer-events:none;opacity:.96;
@@ -1197,12 +1339,12 @@ body.freemode .free-wrap{display:block}
     <div class="export-wrap">
       <button class="primary" id="btn-export" title="ファイルに書き出します（HTML / ZIP / PDF / PNG / 動画）。保存（ブラウザ内）とは別です" aria-haspopup="true" aria-expanded="false">書き出し</button>
       <div class="exmenu" id="exmenu" role="menu">
-        <button type="button" data-ex="html" role="menuitem">HTML 1枚<span class="ex-sub">メール添付・そのまま配布向き</span></button>
-        <button type="button" data-ex="zip" role="menuitem">ZIP（HTML+static）<span class="ex-sub">静的ホストに上げやすい形</span></button>
-        <button type="button" data-ex="pdf" role="menuitem">PDF<span class="ex-sub">印刷ダイアログ → PDFに保存</span></button>
-        <button type="button" data-ex="png" role="menuitem">PNG 一枚絵<span class="ex-sub">ページ全体の静止画</span></button>
-        <button type="button" data-ex="webm" role="menuitem">短尺動画<span class="ex-sub">MP4優先 / なければWebM（ブラウザで再生）</span></button>
-        <button type="button" data-ex="flip" role="menuitem">スライド動画<span class="ex-sub">ブロックをパラパラ（MP4優先）</span></button>
+        <button type="button" data-ex="html" role="menuitem"><span class="ex-tag" hidden>いまの予定</span>HTML 1枚<span class="ex-sub">メール添付・そのまま配布向き</span></button>
+        <button type="button" data-ex="zip" role="menuitem"><span class="ex-tag" hidden>いまの予定</span>ZIP（HTML+static）<span class="ex-sub">静的ホストに上げやすい形</span></button>
+        <button type="button" data-ex="pdf" role="menuitem"><span class="ex-tag" hidden>いまの予定</span>PDF<span class="ex-sub">印刷ダイアログ → PDFに保存</span></button>
+        <button type="button" data-ex="png" role="menuitem"><span class="ex-tag" hidden>いまの予定</span>PNG<span class="ex-sub">全体1枚、または部品ごと複数枚（ZIP）</span></button>
+        <button type="button" data-ex="webm" role="menuitem"><span class="ex-tag" hidden>いまの予定</span>短尺動画<span class="ex-sub">MP4優先 / なければWebM（ブラウザで再生）</span></button>
+        <button type="button" data-ex="flip" role="menuitem"><span class="ex-tag" hidden>いまの予定</span>スライド動画<span class="ex-sub">ブロックをパラパラ（MP4優先）</span></button>
       </div>
     </div>
   </div>
@@ -1236,7 +1378,7 @@ body.freemode .free-wrap{display:block}
     <div class="modal-head">
       <div>
         <div class="mh-t" id="wiz-title">新規作成</div>
-        <div class="mh-d" id="wiz-desc">テンプレートを選んでから、主な書き出し先を決めます。どちらもあとからデザインで変更できます。</div>
+        <div class="mh-d" id="wiz-desc">選ぶたびに進みます。書き出し先はあとからデザインでも同じ手順で変えられます。</div>
       </div>
       <button class="modal-x" id="wiz-x" title="閉じる (Esc)">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
@@ -1266,7 +1408,7 @@ body.freemode .free-wrap{display:block}
     <div class="modal-head">
       <div>
         <div class="mh-t">✦ 生成AI用プロンプト（Hatlier形式で出力させる）</div>
-        <div class="mh-d">下のプロンプトをChatGPTやClaudeなどに貼り付けると、Hatlierと同じブロック構造のHTMLを作れます。返ってきたHTMLは「貼る」にそのまま入れてください（```html 付きでも可）。形式が合えばブロック編集、合わなければフリー編集になります。</div>
+        <div class="mh-d">下のプロンプトをChatGPTやClaudeなどに貼り付けると、Hatlierと同じブロック構造のHTMLを作れます。返ってきたHTMLは「貼る」にそのまま入れてください（```html 付きでも可）。形式が合えばブロック編集、合わなければフリー編集になります。Cursor用は「Skillを保存」で ZIP（<code>hatlier-html/SKILL.md</code>）をダウンロードできます（中身はこのプロンプトと同じ契約・v番号付き）。</div>
       </div>
       <button class="modal-x" id="ai-x" title="閉じる (Esc)">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
@@ -1276,6 +1418,7 @@ body.freemode .free-wrap{display:block}
     <div class="modal-foot">
       <span class="mf-note">作りたい内容（テーマ・伝えたいこと）を末尾に書き足して使ってください。</span>
       <button class="cap-btn" id="ai-paste">結果を貼って開く</button>
+      <button class="cap-btn" id="ai-skill" title="Cursor Skills 用 ZIP（hatlier-html/SKILL.md）">Skillを保存</button>
       <button class="copybtn" id="ai-copy">プロンプトをコピー</button>
     </div>
   </div>
@@ -1406,7 +1549,7 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt
 /* src / href 用。data-URI や https URL を属性に安全に入れる */
 const escAttrUrl = s => esc(s);
 const uid = () => "b" + Math.random().toString(36).slice(2, 9);
-const HATLIER_VERSION = "0.6.2";
+const HATLIER_VERSION = "0.6.9";
 /* Format Core: 文書 schema（エディタ版 HATLIER_VERSION とは別）。破壊的変更のときだけ上げる */
 const HATLIER_FORMAT = "hatlier";
 const HATLIER_SCHEMA = 1;
@@ -1684,28 +1827,76 @@ function normalizeWidth(w){
 /* 主な書き出し先（編集画面のガイド用。書き出しメニューと対応） */
 const TARGET_ORDER = ["web", "zip", "png", "pdf", "slide"];
 const TARGET_META = {
-  web:   { name:"Web（1HTML）", desc:"サイトや共有用の1枚HTML。公開先の厳しさも選べます。", exportKey:"html", needsProfile:true, width:"wide" },
-  zip:   { name:"ZIP（静的ホスト）", desc:"HTML+ファイル。ホストに上げやすい形。", exportKey:"zip", needsProfile:true, width:"wide" },
-  png:   { name:"PNG（1枚絵）", desc:"ページ全体を一枚の画像に。キャンバスを画像サイズ感にします。", exportKey:"png", needsProfile:false, width:"default" },
-  pdf:   { name:"PDF / 印刷", desc:"印刷ダイアログ→PDF。ページの切れ目ガイドを出します。", exportKey:"pdf", needsProfile:false, width:"default" },
-  slide: { name:"スライド動画", desc:"ブロックを1枚ずつパラパラ。切れ目が編集画面で分かります。", exportKey:"flip", needsProfile:false, width:"default" },
+  web:   { name:"Web（1HTML）", desc:"サイトや共有用。公開先の厳しさ＋ページ幅を選べます。", exportKey:"html", needsProfile:true, width:"wide" },
+  zip:   { name:"ZIP（静的ホスト）", desc:"HTML+ファイル。公開先の厳しさ＋ページ幅を選べます。", exportKey:"zip", needsProfile:true, width:"wide" },
+  png:   { name:"PNG", desc:"全体を1枚にするか、部品ごとに複数枚に区切るか。", exportKey:"png", needsProfile:false, width:"default" },
+  pdf:   { name:"PDF / 印刷", desc:"印刷→PDF。用紙サイズとページ境界を目安表示。", exportKey:"pdf", needsProfile:false, width:"default" },
+  slide: { name:"スライド動画", desc:"部品が1枚ずつ。枠の比率を選べます。", exportKey:"flip", needsProfile:false, width:"default" },
 };
 function normalizeTarget(t){
   return TARGET_ORDER.includes(t) ? t : "web";
 }
 function targetDef(t){ return TARGET_META[normalizeTarget(t)]; }
+function plannedExportKey(){ return targetDef(doc.target).exportKey; }
+const EXPORT_KIND_LABEL = {
+  html: "HTML 1枚",
+  zip: "ZIP",
+  pdf: "PDF",
+  png: "PNG",
+  webm: "短尺動画",
+  flip: "スライド動画",
+};
 function targetNeedsProfile(t){ return !!targetDef(t).needsProfile; }
+/** スライドだけ画面比率（artboard） */
+function targetNeedsRatio(t){ return normalizeTarget(t) === "slide"; }
+function targetNeedsArtboard(t){ return targetNeedsRatio(t); }
+function targetNeedsPageSize(t){ return normalizeTarget(t) === "pdf"; }
+function targetNeedsPngMode(t){ return normalizeTarget(t) === "png"; }
+function targetNeedsFollowUp(t){
+  return targetNeedsProfile(t) || targetNeedsRatio(t) || targetNeedsPageSize(t) || targetNeedsPngMode(t);
+}
 
-/* PNG 用アートボード（1枚絵のサイズ感） */
-const ARTBOARD_ORDER = ["landscape", "square", "portrait"];
+/* PNGの切り方（ユーザが本当に選ぶ軸） */
+const PNG_MODE_ORDER = ["whole", "slices"];
+const PNG_MODE_META = {
+  whole:  { name:"全体を1枚に", desc:"ページ全部をそのまま1枚のPNGにします。長い文書でもOK。" },
+  slices: { name:"部品ごとに複数枚", desc:"ブロック1つ＝画像1枚。ZIPにまとめて書き出します。" },
+};
+function normalizePngMode(m){
+  return PNG_MODE_ORDER.includes(m) ? m : "whole";
+}
+function pngModeLabel(m){ return PNG_MODE_META[normalizePngMode(m)].name; }
+
+/* スライド用の画面比率（列挙のみ） */
+const ARTBOARD_ORDER = ["landscape", "fourthree", "square", "portrait"];
 const ARTBOARD_META = {
-  landscape: { name:"横長", desc:"16:9 っぽい" },
-  square:    { name:"正方形", desc:"1:1" },
-  portrait:  { name:"縦長", desc:"ストーリー寄り" },
+  landscape: { name:"ワイド 16:9", desc:"いまの標準・横長", ar:"16/9" },
+  fourthree:{ name:"クラシック 4:3", desc:"昔の画面・ややスクエア", ar:"4/3" },
+  square:    { name:"正方形 1:1", desc:"正方形スライド", ar:"1/1" },
+  portrait:  { name:"縦長 9:16", desc:"スマホ縦・ストーリー", ar:"9/16" },
 };
 function normalizeArtboard(a){
   return ARTBOARD_ORDER.includes(a) ? a : "landscape";
 }
+function artboardLabel(a){
+  const m = ARTBOARD_META[normalizeArtboard(a)];
+  return m ? m.name : "ワイド 16:9";
+}
+
+/* PDF 用紙サイズ（編集ガイドのページ高さ。印刷ダイアログの実寸とは別の目安） */
+const PAGE_SIZE_ORDER = ["a4", "a4-landscape", "letter", "b5"];
+const PAGE_SIZE_META = {
+  a4:            { name:"A4 縦", desc:"日本でいちばん多い", hPx:1123 },
+  "a4-landscape":{ name:"A4 横", desc:"横向きの印刷向き", hPx:794 },
+  letter:        { name:"Letter 縦", desc:"USレター", hPx:1056 },
+  b5:            { name:"B5 縦", desc:"やや小さめの用紙", hPx:971 },
+};
+function normalizePageSize(p){
+  return PAGE_SIZE_ORDER.includes(p) ? p : "a4";
+}
+function pageSizeDef(p){ return PAGE_SIZE_META[normalizePageSize(p)]; }
+function pageSizeLabel(p){ return pageSizeDef(p).name; }
+function pdfPageHeightPx(p){ return pageSizeDef(p).hPx || 1123; }
 
 /* 構図 shell（自由配置なし。枠の種類と列挙オプションのみ） */
 const SHELL_TYPE_ORDER = ["stack", "split"];
@@ -1772,6 +1963,87 @@ const ALIGN_ORDER = ["start", "center", "end"];
 const ALIGN_LABEL = { start:"左", center:"中", end:"右" };
 function normalizeFrame(f){ return FRAME_ORDER.includes(f) ? f : "full"; }
 function normalizeAlign(a){ return ALIGN_ORDER.includes(a) ? a : "center"; }
+const TABLE_COLW_ORDER = ["equal", "auto"];
+const TABLE_COLW_LABEL = { equal:"均等", auto:"文字幅" };
+function normalizeTableColWidth(w){ return TABLE_COLW_ORDER.includes(w) ? w : "equal"; }
+function cycleTableColWidth(cur){
+  const i = TABLE_COLW_ORDER.indexOf(normalizeTableColWidth(cur));
+  return TABLE_COLW_ORDER[(i + 1) % TABLE_COLW_ORDER.length];
+}
+/* コード部品の言語（列挙のみ。ハイライトはCSS任せ／表示ラベル用） */
+const CODE_LANG_ORDER = [
+  "text","python","javascript","typescript","html","css","json","bash","sql","markdown",
+  "go","rust","java","csharp","php","ruby","swift","kotlin","yaml","xml",
+];
+const CODE_LANG_LABEL = {
+  text:"Text", python:"Python", javascript:"JS", typescript:"TS", html:"HTML", css:"CSS",
+  json:"JSON", bash:"Bash", sql:"SQL", markdown:"MD", go:"Go", rust:"Rust", java:"Java",
+  csharp:"C#", php:"PHP", ruby:"Ruby", swift:"Swift", kotlin:"Kotlin", yaml:"YAML", xml:"XML",
+};
+const CODE_LANG_ALIAS = {
+  js:"javascript", mjs:"javascript", cjs:"javascript", ts:"typescript", tsx:"typescript",
+  py:"python", sh:"bash", zsh:"bash", md:"markdown", "c#":"csharp", cs:"csharp",
+  yml:"yaml", htm:"html", txt:"text",
+};
+const CODE_EXT_LANG = {
+  py:"python", js:"javascript", mjs:"javascript", cjs:"javascript", ts:"typescript", tsx:"typescript",
+  html:"html", htm:"html", css:"css", json:"json", sh:"bash", bash:"bash", sql:"sql", md:"markdown",
+  go:"go", rs:"rust", java:"java", cs:"csharp", php:"php", rb:"ruby", swift:"swift", kt:"kotlin",
+  yaml:"yaml", yml:"yaml", xml:"xml", txt:"text",
+};
+function normalizeCodeLang(l){
+  const s = String(l == null ? "" : l).toLowerCase().trim();
+  const id = CODE_LANG_ALIAS[s] || s;
+  return CODE_LANG_ORDER.includes(id) ? id : "text";
+}
+function cycleCodeLang(cur){
+  const i = CODE_LANG_ORDER.indexOf(normalizeCodeLang(cur));
+  return CODE_LANG_ORDER[(i + 1) % CODE_LANG_ORDER.length];
+}
+function inferCodeLangFromFile(file){
+  const m = String(file || "").toLowerCase().match(/\.([a-z0-9]+)$/);
+  return m && CODE_EXT_LANG[m[1]] ? CODE_EXT_LANG[m[1]] : null;
+}
+function normalizeCodeProps(p){
+  const src = p && typeof p === "object" ? p : {};
+  const file = src.file == null ? "example.py" : String(src.file);
+  let lang = src.lang;
+  if (lang == null || lang === ""){
+    lang = inferCodeLangFromFile(file) || "python";
+  }
+  return {
+    file,
+    lang: normalizeCodeLang(lang),
+    code: src.code == null ? "" : String(src.code),
+  };
+}
+function colLetter(i){
+  let n = Math.max(0, i | 0), s = "";
+  do {
+    s = String.fromCharCode(65 + (n % 26)) + s;
+    n = Math.floor(n / 26) - 1;
+  } while (n >= 0);
+  return s;
+}
+function normalizeTableProps(p){
+  const src = p && typeof p === "object" ? p : {};
+  const head = Array.isArray(src.head) && src.head.length ? src.head.map(h => String(h ?? "")) : ["項目", "内容", "備考"];
+  const cols = head.length;
+  let rows = Array.isArray(src.rows) ? src.rows : [];
+  if (!rows.length) rows = [Array(cols).fill(""), Array(cols).fill("")];
+  rows = rows.map(r => {
+    const row = Array.isArray(r) ? r.map(c => String(c ?? "")) : [];
+    while (row.length < cols) row.push("");
+    return row.slice(0, cols);
+  });
+  return {
+    title: src.title == null ? "" : String(src.title),
+    head,
+    rows,
+    sheet: !!src.sheet,
+    colWidth: normalizeTableColWidth(src.colWidth),
+  };
+}
 function cycleFrame(cur){
   const i = FRAME_ORDER.indexOf(normalizeFrame(cur));
   return FRAME_ORDER[(i + 1) % FRAME_ORDER.length];
@@ -2476,17 +2748,29 @@ const REG = {
   },
   table: {
     name: "テーブル",
-    defaults: () => ({ head:["項目","内容","備考"], rows:[["例A","説明をここに","—"],["例B","説明をここに","—"]] }),
+    defaults: () => ({ title:"", head:["項目","内容","備考"], rows:[["例A","説明をここに","—"],["例B","説明をここに","—"]], sheet:false, colWidth:"equal" }),
     ops: [
       { label:"列＋", tip:"列を追加",       can:p => p.head.length < 6, run:p => { p.head.push("列"); p.rows.forEach(r => r.push("")); } },
       { label:"列−", tip:"右端の列を削除", can:p => p.head.length > 2, run:p => { p.head.pop(); p.rows.forEach(r => r.pop()); } },
       { label:"行＋", tip:"行を追加（最下セルでTabでも追加）", can:p => p.rows.length < 30, run:p => p.rows.push(Array(p.head.length).fill("")) },
       { label:"行−", tip:"最下行を削除",   can:p => p.rows.length > 1, run:p => p.rows.pop() },
     ],
-    render: p => `<section class="blk b-table"><div class="tblwrap"><table>
-      <thead><tr>${p.head.map((h,i)=>`<th data-edit="head.${i}" data-single>${esc(h)}</th>`).join("")}</tr></thead>
-      <tbody>${p.rows.map((r,ri)=>`<tr>${r.map((c,ci)=>`<td data-edit="rows.${ri}.${ci}" data-ph="…">${esc(c)}</td>`).join("")}</tr>`).join("")}</tbody>
-    </table></div></section>`
+    render: p => {
+      const t = normalizeTableProps(p);
+      const sheet = t.sheet;
+      const letters = sheet
+        ? `<thead class="tbl-abc"><tr><th class="tbl-corner" scope="col" aria-hidden="true"></th>${t.head.map((_,i)=>`<th class="tbl-letter" scope="col">${colLetter(i)}</th>`).join("")}</tr></thead>`
+        : "";
+      const headRow = `<tr>${sheet ? `<th class="tbl-rownum" scope="col" aria-hidden="true"></th>` : ""}${t.head.map((h,i)=>`<th data-edit="head.${i}" data-single>${esc(h)}</th>`).join("")}</tr>`;
+      const body = t.rows.map((r,ri)=>`<tr>${sheet ? `<th class="tbl-rownum" scope="row">${ri + 1}</th>` : ""}${r.map((c,ci)=>`<td data-edit="rows.${ri}.${ci}" data-ph="…">${esc(c)}</td>`).join("")}</tr>`).join("");
+      return `<section class="blk b-table" data-sheet="${sheet ? "1" : "0"}" data-col-width="${t.colWidth}">
+      <h3 class="tbl-title" data-edit="title" data-single data-ph="テーブル名（任意）">${esc(t.title)}</h3>
+      <div class="tblwrap"><table>
+      ${letters}
+      <thead>${headRow}</thead>
+      <tbody>${body}</tbody>
+    </table></div></section>`;
+    }
   },
   chart: {
     name: "グラフ",
@@ -2592,23 +2876,31 @@ const REG = {
   },
   code: {
     name: "コード",
-    defaults: () => ({ file:"example.py", code:'def hello():\n    print("Hello, Hatlier")' }),
-    render: p => `<section class="blk b-code"><div class="codebox">
-      <div class="codehead" data-edit="file" data-single data-ph="ファイル名・言語など">${esc(p.file)}</div>
-      <pre class="codebody" data-edit="code">${esc(p.code)}</pre>
-    </div></section>`
+    defaults: () => ({ file:"example.py", lang:"python", code:'def hello():\n    print("Hello, Hatlier")' }),
+    render: p => {
+      const c = normalizeCodeProps(p);
+      return `<section class="blk b-code" data-lang="${esc(c.lang)}"><div class="codebox">
+      <div class="codehead">
+        <span class="code-lang" aria-hidden="true">${esc(c.lang)}</span>
+        <span data-edit="file" data-single data-ph="ファイル名">${esc(c.file)}</span>
+      </div>
+      <pre class="codebody" data-edit="code">${esc(c.code)}</pre>
+    </div></section>`;
+    }
   },
   linkcard: {
     name: "リンクカード",
-    defaults: () => ({ title:"リンクのタイトル", desc:"リンク先の説明をここに。", url:"https://example.com" }),
+    defaults: () => ({ title:"リンクのタイトル", desc:"リンク先の説明をここに。", url:"https://example.com", align:"start" }),
     render: (p, forExport) => {
       const url = String(p.url || "").trim();
       const safe = /^https?:\/\//i.test(url) ? esc(url) : "";
+      /* 旧文書（align なし）は左寄せ。画像の既定 center とは別 */
+      const a = (p.align == null || p.align === "") ? "start" : normalizeAlign(p.align);
       const inner = `<span class="lc-ico">${ICONS.link}</span><span class="lc-body">
         <span class="lc-t" data-edit="title" data-single>${esc(p.title)}</span>
         <span class="lc-d" data-edit="desc">${esc(p.desc)}</span>
         <span class="lc-u" data-edit="url" data-single data-ph="https://…">${esc(p.url)}</span></span>`;
-      return `<section class="blk b-link">${forExport && safe
+      return `<section class="blk b-link" data-align="${a}">${forExport && safe
         ? `<a class="lc" href="${safe}" target="_blank" rel="noopener">${inner}</a>`
         : `<span class="lc">${inner}</span>`}</section>`;
     }
@@ -2934,7 +3226,7 @@ const REG = {
 
 /* ---- 初期ドキュメント（このツール自身の説明＝チュートリアル） ---- */
 function defaultDoc(){
-  return { format:HATLIER_FORMAT, schema:HATLIER_SCHEMA, theme:"paper", bg:"plain", font:"elegant", profile:"safe", width:"default", target:"web", artboard:"landscape", blocks:[
+  return { format:HATLIER_FORMAT, schema:HATLIER_SCHEMA, theme:"paper", bg:"plain", font:"elegant", profile:"safe", width:"default", target:"web", artboard:"landscape", pageSize:"a4", pngMode:"whole", blocks:[
     { id:uid(), type:"hero", kind:"hero", version:1, props:{
       variant:"display",
       kicker:"HATLIER — SINGLE FILE EDITOR",
@@ -3094,6 +3386,8 @@ function migrate(d, targetSchema){
   d.width = normalizeWidth(d.width);
   d.target = normalizeTarget(d.target);
   d.artboard = normalizeArtboard(d.artboard);
+  d.pageSize = normalizePageSize(d.pageSize);
+  d.pngMode = normalizePngMode(d.pngMode);
   d.cvd = normalizeCvd(d.cvd);
   d.shell = normalizeShell(d.shell);
   d.blocks = (d.blocks || []).map(b => {
@@ -3116,6 +3410,12 @@ function migrate(d, targetSchema){
     }
     if (b.type === "carousel"){
       b.props = normalizeCarouselProps(b.props);
+    }
+    if (b.type === "table"){
+      b.props = normalizeTableProps(b.props);
+    }
+    if (b.type === "code"){
+      b.props = normalizeCodeProps(b.props);
     }
     if (b.type === "calendar"){
       b.props = normalizeCalendarProps(b.props);
@@ -3450,18 +3750,28 @@ function blockHTML(b){
     : "";
   const liveBtn = b.type === "clock"
     ? `<button class="tb tb-op" data-act="clocklive" title="live">${b.props.live ? "実時" : "静止"}</button>` : "";
+  const tableSheetBtn = b.type === "table"
+    ? `<button class="tb tb-op" data-act="tablesheet" title="Excel風の列ABC・行番号">${b.props.sheet ? "表計算ON" : "表計算"}</button>` : "";
+  const tableColBtn = b.type === "table"
+    ? `<button class="tb tb-op" data-act="tablecolw" title="列幅: 均等 / 文字に合わせる">幅:${TABLE_COLW_LABEL[normalizeTableColWidth(b.props.colWidth)]}</button>` : "";
+  const linkAlignBtn = b.type === "linkcard"
+    ? `<button class="tb tb-op" data-act="align" title="左右の寄せ">${ALIGN_LABEL[(b.props.align == null || b.props.align === "") ? "start" : normalizeAlign(b.props.align)]}</button>` : "";
+  const codeLangBtn = b.type === "code"
+    ? `<button class="tb tb-op" data-act="codelang" title="言語を切り替え">言語:${CODE_LANG_LABEL[normalizeCodeLang(b.props.lang)] || normalizeCodeLang(b.props.lang)}</button>` : "";
   const shell = shellOf(doc);
   const regionBtn = shell.type === "split"
     ? (regionOf(b) === "side"
       ? `<button class="tb tb-op" data-act="tomain" title="メイン列へ移す">→メイン</button>`
       : `<button class="tb tb-op" data-act="toside" title="サイド列へ移す">→サイド</button>`)
     : "";
+  const kindChip = `<div class="bkind" title="${esc(def.name)}"><span class="bkind-ico">${BLOCK_ICONS[b.type] || BLOCK_ICONS._}</span><span class="bkind-nm">${esc(def.name)}</span></div>`;
   return `<div class="bw${b.id === selectedId ? " sel" : ""}" data-id="${b.id}" data-region="${regionOf(b)}">
+    ${kindChip}
     <div class="grip" data-grip title="ドラッグで移動">
       <svg width="10" height="17" viewBox="0 0 10 17" fill="currentColor"><circle cx="2.5" cy="3" r="1.5"/><circle cx="7.5" cy="3" r="1.5"/><circle cx="2.5" cy="8.5" r="1.5"/><circle cx="7.5" cy="8.5" r="1.5"/><circle cx="2.5" cy="14" r="1.5"/><circle cx="7.5" cy="14" r="1.5"/></svg>
     </div>
     <div class="btools">
-      ${ops}${mediaBtn}${chartBtn}${carBtn}${varBtn}${spaceBtn}${heroBgBtn}${capBtns}${cropBtn}${frameBtn}${liveBtn}${regionBtn}
+      ${ops}${mediaBtn}${chartBtn}${carBtn}${varBtn}${spaceBtn}${heroBgBtn}${capBtns}${cropBtn}${frameBtn}${tableSheetBtn}${tableColBtn}${linkAlignBtn}${codeLangBtn}${liveBtn}${regionBtn}
       <button class="tb" data-act="dup" title="複製 (⌘D)"><svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><rect x="4.5" y="4.5" width="8" height="8" rx="2"/><path d="M9.5 2.5h-5a2 2 0 0 0-2 2v5"/></svg></button>
       <button class="tb tb-del" data-act="del" title="削除"><svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3.5h10"/><path d="M5.3 3.5V2.4a.8.8 0 0 1 .8-.8h1.8a.8.8 0 0 1 .8.8v1.1"/><path d="M3.4 3.5l.6 8.1a1 1 0 0 0 1 .9h4a1 1 0 0 0 1-.9l.6-8.1"/></svg></button>
     </div>
@@ -3471,14 +3781,64 @@ function blockHTML(b){
 }
 
 function blocksWithBreaksHTML(blocks){
-  const showSlide = normalizeTarget(doc.target) === "slide";
+  const target = normalizeTarget(doc.target);
+  const showFrames = target === "slide" || (target === "png" && normalizePngMode(doc.pngMode) === "slices");
+  const ratioLabel = artboardLabel(doc.artboard);
   return blocks.map((b, i) => {
-    const br = (showSlide && i > 0)
-      ? `<div class="slide-break" aria-hidden="true"><span>スライド ${i + 1}</span></div>`
-      : "";
-    return br + blockHTML(b);
+    const body = blockHTML(b);
+    if (!showFrames) return body;
+    const isPng = target === "png";
+    return `<div class="slide-card" data-slide="${i + 1}">
+      <div class="slide-card-bar" aria-hidden="true">
+        <span class="slide-card-num">${isPng ? `画像 ${i + 1}` : `スライド ${i + 1}`}</span>
+        <span class="slide-card-hint">${isPng
+          ? "この部品が PNG 1 枚"
+          : `この枠が 1 枚（${esc(ratioLabel)}）`}</span>
+      </div>
+      <div class="slide-card-stage">${body}</div>
+    </div>`;
   }).join("");
 }
+function exportGuideChromeHTML(){
+  const target = normalizeTarget(doc.target);
+  if (target === "png"){
+    const mode = normalizePngMode(doc.pngMode);
+    if (mode === "slices"){
+      return `<div class="png-guide-label">部品ごと → 複数PNG（ZIP）。カード1枚 = 画像1枚</div>`;
+    }
+    return `<div class="png-guide-label">ページ全体を 1 枚の PNG に書き出します</div>`;
+  }
+  if (target === "pdf"){
+    const ps = normalizePageSize(doc.pageSize);
+    return `<div class="pdf-guide-label">用紙目安: ${esc(pageSizeLabel(ps))}（帯の下端がページ境界）</div>
+      <div class="pdf-page-stack" aria-hidden="true"></div>`;
+  }
+  return "";
+}
+function syncPdfPageBands(){
+  if (normalizeTarget(doc.target) !== "pdf") return;
+  const stack = canvas.querySelector(".pdf-page-stack");
+  if (!stack) return;
+  const pageH = pdfPageHeightPx(doc.pageSize);
+  canvas.style.setProperty("--pdf-page-h", pageH + "px");
+  const label = pageSizeLabel(doc.pageSize);
+  const paint = () => {
+    const h = Math.max(canvas.scrollHeight, pageH + 48);
+    const n = Math.max(1, Math.ceil(h / pageH));
+    stack.innerHTML = Array.from({ length: n }, (_, i) => `
+      <div class="pdf-page-band" style="height:${pageH}px">
+        <span class="pdf-page-chip">ページ ${i + 1} · ${esc(label)}</span>
+        <span class="pdf-page-edge">▲ ここまでが ${i + 1} ページ目の目安</span>
+      </div>`).join("");
+  };
+  paint();
+  requestAnimationFrame(paint);
+}
+let _pdfBandTimer = 0;
+window.addEventListener("resize", () => {
+  clearTimeout(_pdfBandTimer);
+  _pdfBandTimer = setTimeout(syncPdfPageBands, 120);
+});
 function regionColumnHTML(region, blocks){
   const label = region === "side" ? "サイド" : "メイン";
   const top = `<div class="ins ins-top" data-region="${region}" title="ブロックを追加"><button class="insbtn">+</button></div>`;
@@ -3507,14 +3867,20 @@ function render(){
   canvas.dataset.side = shell.side;
   canvas.dataset.target = target;
   canvas.dataset.artboard = normalizeArtboard(doc.artboard);
+  canvas.dataset.pageSize = normalizePageSize(doc.pageSize);
+  canvas.dataset.pngMode = normalizePngMode(doc.pngMode);
+  canvas.style.setProperty("--pdf-page-h", pdfPageHeightPx(doc.pageSize) + "px");
+  const guide = exportGuideChromeHTML();
   if (shell.type === "split"){
     canvas.innerHTML =
+      guide +
       `<div class="shell-split">` +
       regionColumnHTML("main", blocksOf("main")) +
       regionColumnHTML("side", blocksOf("side")) +
       `</div>`;
   } else {
     canvas.innerHTML =
+      guide +
       `<div class="ins ins-top" data-region="main" title="ブロックを追加"><button class="insbtn">+</button></div>` +
       blocksWithBreaksHTML(doc.blocks);
   }
@@ -3523,6 +3889,7 @@ function render(){
     el.spellcheck = false;
   });
   syncThemePills();
+  syncPdfPageBands();
   const html = document.documentElement;
   const prev = html.style.scrollBehavior;
   html.style.scrollBehavior = "auto";
@@ -3947,9 +4314,35 @@ canvas.addEventListener("click", e => {
     }
     else if (act.dataset.act === "align"){
       const b = doc.blocks[findIdx(id)];
-      if (!b || (b.type !== "image" && b.type !== "video")) return;
+      if (!b || (b.type !== "image" && b.type !== "video" && b.type !== "linkcard")) return;
       const prev = snap();
-      b.props.align = cycleAlign(b.props.align);
+      const cur = (b.type === "linkcard" && (b.props.align == null || b.props.align === ""))
+        ? "start" : normalizeAlign(b.props.align);
+      b.props.align = cycleAlign(cur);
+      pushUndo(prev); save(); flipRender();
+    }
+    else if (act.dataset.act === "tablesheet"){
+      const b = doc.blocks[findIdx(id)];
+      if (!b || b.type !== "table") return;
+      const prev = snap();
+      Object.assign(b.props, normalizeTableProps(b.props));
+      b.props.sheet = !b.props.sheet;
+      pushUndo(prev); save(); flipRender();
+    }
+    else if (act.dataset.act === "tablecolw"){
+      const b = doc.blocks[findIdx(id)];
+      if (!b || b.type !== "table") return;
+      const prev = snap();
+      Object.assign(b.props, normalizeTableProps(b.props));
+      b.props.colWidth = cycleTableColWidth(b.props.colWidth);
+      pushUndo(prev); save(); flipRender();
+    }
+    else if (act.dataset.act === "codelang"){
+      const b = doc.blocks[findIdx(id)];
+      if (!b || b.type !== "code") return;
+      const prev = snap();
+      Object.assign(b.props, normalizeCodeProps(b.props));
+      b.props.lang = cycleCodeLang(b.props.lang);
       pushUndo(prev); save(); flipRender();
     }
     else if (act.dataset.act === "audioposter"){
@@ -3987,7 +4380,7 @@ canvas.addEventListener("click", e => {
 });
 document.addEventListener("click", e => {
   if (!e.target.closest(".palette") && !e.target.closest(".ins")) closePalette();
-  if (!e.target.closest("#design") && !e.target.closest("#btn-design")) closeDesign();
+  /* デザインはキャンバスを見ながら触るので、外側クリックでは閉じない（× / ボタン / Esc） */
   if (!e.target.closest("#chartedit") && !e.target.closest('[data-act="chartedit"]') && !e.target.closest('[data-act="caredit"]')) closeChartEdit();
   if (!e.target.closest("#herobg-pop") && !e.target.closest('[data-act="herobg"]')) closeHeroBgPanel();
   if (!e.target.closest("#canvas") && !e.target.closest(".topbar") && !e.target.closest("#design") && !e.target.closest("#chartedit") && !e.target.closest("#herobg-pop")) select(null);
@@ -4069,8 +4462,16 @@ function positionPop(pop, anchor){
   pop.style.top = (below + ph > innerHeight - 12 ? Math.max(12, r.top - ph - 10) : below) + "px";
 }
 
-/* ---- デザインパネル（背景・フォント） ---- */
+/* ---- デザインパネル（タブ分け・ドラッグ可） ---- */
 const design = $("#design");
+const DESIGN_TABS = [
+  { id:"export", label:"書き出し" },
+  { id:"layout", label:"構図" },
+  { id:"look", label:"見た目" },
+  { id:"more", label:"その他" },
+];
+let designTab = "export";
+let designMoved = false;
 
 const bgOptHTML = b => `
       <button class="bgopt${b.id === doc.bg ? " on" : ""}" data-bg-id="${b.id}">
@@ -4078,25 +4479,98 @@ const bgOptHTML = b => `
         <span class="optnm">${b.name}</span>
       </button>`;
 
+function clampDesignPos(){
+  if (!design.classList.contains("open")) return;
+  const w = design.offsetWidth || 460;
+  const h = design.offsetHeight || 200;
+  let left = parseFloat(design.style.left);
+  let top = parseFloat(design.style.top);
+  if (!Number.isFinite(left)) left = 12;
+  if (!Number.isFinite(top)) top = 12;
+  left = Math.max(8, Math.min(left, innerWidth - Math.min(w, innerWidth - 16)));
+  top = Math.max(8, Math.min(top, innerHeight - 48));
+  design.style.left = left + "px";
+  design.style.top = top + "px";
+}
+function placeDesignPanel(){
+  if (designMoved) clampDesignPos();
+  else positionPop(design, $("#btn-design"));
+}
+
 function renderDesign(){
   const shell = shellOf(doc);
   const target = normalizeTarget(doc.target);
   const showProfile = targetNeedsProfile(target);
-  design.innerHTML = `
-    <div class="dlab">主な書き出し</div>
-    <div class="dhint">編集画面のガイド（画像サイズ感・ページ／スライド切れ目）を切り替えます。書き出しメニュー自体はいつでも使えます。</div>
+  const showRatio = targetNeedsRatio(target);
+  const showPageSize = targetNeedsPageSize(target);
+  const showPngMode = targetNeedsPngMode(target);
+  const wasOpen = design.classList.contains("open");
+  const sc = design.querySelector(".design-body")?.scrollTop || 0;
+  const tab = DESIGN_TABS.some(t => t.id === designTab) ? designTab : "export";
+  designTab = tab;
+
+  const widthBlock = `
+    <div class="dlab">${showProfile ? "ページ幅（Web / ZIP のサイズ感）" : "ページ幅"}</div>
+    <div class="dhint">${showProfile
+      ? "サイトとして読むときの横の余白です。書き出しHTMLにも反映されます。"
+      : "コンテンツの横の余白。全幅にすると「サイトっぽく」画面を使えます。"}</div>
+    <div class="wrow">${WIDTH_ORDER.map(id => `
+      <button type="button" class="wopt${normalizeWidth(doc.width) === id ? " on" : ""}" data-width-id="${id}">
+        <span class="optnm">${WIDTH_META[id].name}</span>
+        <span class="optd">${WIDTH_META[id].desc}</span>
+      </button>`).join("")}</div>`;
+
+  let body = "";
+  if (tab === "export"){
+    body = `
+    <div class="dlab">編集ガイドの向き</div>
+    <div class="dhint">いちばん使う書き出しに合わせて、キャンバスに目安を出します。書き出しメニューでは「いまの予定」が上に出ます。</div>
     <div class="wrow">${TARGET_ORDER.map(id => `
       <button type="button" class="wopt${target === id ? " on" : ""}" data-target-id="${id}">
         <span class="optnm">${TARGET_META[id].name}</span>
         <span class="optd">${TARGET_META[id].desc}</span>
       </button>`).join("")}</div>
-    ${target === "png" ? `
-    <div class="dlab">画像のサイズ感</div>
+    ${showPngMode ? `
+    <div class="dlab">PNGの切り方</div>
+    <div class="dhint">全体1枚か、部品ごとの複数枚か。正方形などのサイズ指定はありません。</div>
+    <div class="wrow">${PNG_MODE_ORDER.map(id => `
+      <button type="button" class="wopt${normalizePngMode(doc.pngMode) === id ? " on" : ""}" data-png-mode-id="${id}">
+        <span class="optnm">${PNG_MODE_META[id].name}</span>
+        <span class="optd">${PNG_MODE_META[id].desc}</span>
+      </button>`).join("")}</div>` : ""}
+    ${showRatio ? `
+    <div class="dlab">スライドの比率</div>
+    <div class="dhint">カード1枚 = 動画の1スライド。枠の比率を切り替えます。</div>
     <div class="wrow">${ARTBOARD_ORDER.map(id => `
       <button type="button" class="wopt${normalizeArtboard(doc.artboard) === id ? " on" : ""}" data-artboard-id="${id}">
+        <span class="ar-prev" data-ar="${id}" aria-hidden="true"></span>
         <span class="optnm">${ARTBOARD_META[id].name}</span>
         <span class="optd">${ARTBOARD_META[id].desc}</span>
       </button>`).join("")}</div>` : ""}
+    ${showPageSize ? `
+    <div class="dlab">PDFの用紙サイズ</div>
+    <div class="dhint">オレンジの帯が「だいたい1ページ」。下端の印がページ境界の目安です。</div>
+    <div class="wrow">${PAGE_SIZE_ORDER.map(id => `
+      <button type="button" class="wopt${normalizePageSize(doc.pageSize) === id ? " on" : ""}" data-page-size-id="${id}">
+        <span class="page-prev" data-page="${id}" aria-hidden="true"></span>
+        <span class="optnm">${PAGE_SIZE_META[id].name}</span>
+        <span class="optd">${PAGE_SIZE_META[id].desc}</span>
+      </button>`).join("")}</div>` : ""}
+    ${showProfile ? `
+    <div class="dlab">公開先の厳しさ（CSP）</div>
+    <div class="dhint">Web / ZIP 向け。厳しい公開先でも困りにくいかを決めます。</div>
+    <div class="prow">${PROFILES.map(p => `
+      <button type="button" class="popt${p.id === doc.profile ? " on" : ""}${p.disabled ? " dis" : ""}"
+        data-profile-id="${p.id}" ${p.disabled ? "disabled" : ""}>
+        <span class="popt-top">
+          <span class="popt-name">${esc(p.label)}</span>
+          ${p.hint ? `<span class="popt-hint${p.hintClass ? " " + p.hintClass : ""}">${esc(p.hint)}</span>` : ""}
+        </span>
+        <span class="popt-desc">${esc(p.desc)}</span>
+      </button>`).join("")}</div>` : ""}
+    ${widthBlock}`;
+  } else if (tab === "layout"){
+    body = `
     <div class="dlab">構図</div>
     <div class="dhint">ページ全体の枠。自由配置はありません。モバイルではサイドが下に折ります。</div>
     <div class="wrow">${SHELL_TYPE_ORDER.map(id => `
@@ -4116,26 +4590,9 @@ function renderDesign(){
         <span class="optnm">${SHELL_RATIO_META[id].name}</span>
         <span class="optd">${SHELL_RATIO_META[id].desc}</span>
       </button>`).join("")}</div>` : ""}
-    <div class="dlab">出力の向き${showProfile ? "" : "（Web / ZIP 向け）"}</div>
-    <div class="dhint">${showProfile
-      ? "書き出したHTMLが、どれくらい厳しい公開先でも困りにくいかを決めます。"
-      : "いまの主な書き出しは Web/ZIP 以外です。向きは残しておけます（HTML書き出し時に効きます）。"}</div>
-    <div class="prow">${PROFILES.map(p => `
-      <button type="button" class="popt${p.id === doc.profile ? " on" : ""}${p.disabled ? " dis" : ""}"
-        data-profile-id="${p.id}" ${p.disabled ? "disabled" : ""}>
-        <span class="popt-top">
-          <span class="popt-name">${esc(p.label)}</span>
-          ${p.hint ? `<span class="popt-hint${p.hintClass ? " " + p.hintClass : ""}">${esc(p.hint)}</span>` : ""}
-        </span>
-        <span class="popt-desc">${esc(p.desc)}</span>
-      </button>`).join("")}</div>
-    <div class="dlab">ページ幅</div>
-    <div class="dhint">コンテンツの横の余白。全幅にすると「サイトっぽく」画面を使えます。</div>
-    <div class="wrow">${WIDTH_ORDER.map(id => `
-      <button type="button" class="wopt${normalizeWidth(doc.width) === id ? " on" : ""}" data-width-id="${id}">
-        <span class="optnm">${WIDTH_META[id].name}</span>
-        <span class="optd">${WIDTH_META[id].desc}</span>
-      </button>`).join("")}</div>
+    ${showProfile ? "" : widthBlock}`;
+  } else if (tab === "look"){
+    body = `
     <div class="dlab">テーマ</div>
     <div class="drow">${THEMES.map(t => `
       <button class="topt${t.id === doc.theme ? " on" : ""}" data-theme-id="${t.id}" title="${t.name}">
@@ -4146,13 +4603,6 @@ function renderDesign(){
     <div class="drow">${BGS.map(bgOptHTML).join("")}</div>
     <div class="dlab">モチーフ</div>
     <div class="drow">${MOTIFS.map(bgOptHTML).join("")}</div>
-
-    <div class="dlab">色覚シミュレーション</div>
-    <div class="dhint">設計確認用の近似フィルタです。写し出しHTMLにも付きます。</div>
-    <div class="wrow">${CVD_ORDER.map(id => `
-      <button type="button" class="wopt${normalizeCvd(doc.cvd) === id ? " on" : ""}" data-cvd-id="${id}">
-        <span class="optnm">${CVD_LABEL[id]}</span>
-      </button>`).join("")}</div>
     <div class="dlab">フォント</div>
     <div class="drow">${FONTS.map(f => `
       <button class="fopt${f.id === doc.font ? " on" : ""}" data-font-id="${f.id}">
@@ -4160,6 +4610,14 @@ function renderDesign(){
         <span class="optnm">${f.name}</span>
       </button>`).join("")}
     </div>
+    <div class="dlab">色覚シミュレーション</div>
+    <div class="dhint">設計確認用の近似フィルタです。写し出しHTMLにも付きます。</div>
+    <div class="wrow">${CVD_ORDER.map(id => `
+      <button type="button" class="wopt${normalizeCvd(doc.cvd) === id ? " on" : ""}" data-cvd-id="${id}">
+        <span class="optnm">${CVD_LABEL[id]}</span>
+      </button>`).join("")}</div>`;
+  } else {
+    body = `
     <div class="dlab">ブラウザ設定</div>
     <div class="dhint">この端末のブラウザ内だけ。アカウントはありません。マイテンプレの上限はメモリ目安です。</div>
     <div class="srow">
@@ -4171,20 +4629,82 @@ function renderDesign(){
     <div class="srow" style="margin-top:10px">
       <button type="button" class="sbtn" id="btn-save-mytpl">いまの文書をマイテンプレに保存</button>
     </div>`;
+  }
+
+  design.innerHTML = `
+    <div class="design-head">
+      <div>
+        <span class="design-title">デザイン</span>
+        <span class="design-title-sub">見出しをドラッグで移動</span>
+      </div>
+      <button type="button" class="modal-x" id="design-x" title="閉じる (Esc)">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+      </button>
+    </div>
+    <div class="design-tabs" role="tablist">
+      ${DESIGN_TABS.map(t => `
+        <button type="button" class="design-tab${tab === t.id ? " on" : ""}" role="tab" aria-selected="${tab === t.id ? "true" : "false"}" data-design-tab="${t.id}">${t.label}</button>`).join("")}
+    </div>
+    <div class="design-body">${body}</div>`;
+  if (wasOpen){
+    const bodyEl = design.querySelector(".design-body");
+    if (bodyEl) bodyEl.scrollTop = sc;
+    placeDesignPanel();
+  }
 }
 $("#btn-design").addEventListener("click", () => {
   if (design.classList.contains("open")){ closeDesign(); return; }
   closePalette(); closeChartEdit();
   renderDesign();
   design.classList.add("open");
-  positionPop(design, $("#btn-design"));
+  placeDesignPanel();
   requestAnimationFrame(() => design.classList.add("vis"));
 });
 function closeDesign(){
   design.classList.remove("vis");
   design.classList.remove("open");
+  design.classList.remove("dragging");
 }
+/* デザイン窓のドラッグ（見出しバー） */
+(function(){
+  let drag = null;
+  design.addEventListener("pointerdown", e => {
+    const head = e.target.closest(".design-head");
+    if (!head || e.target.closest("#design-x") || e.target.closest("button")) return;
+    if (!design.classList.contains("open")) return;
+    const r = design.getBoundingClientRect();
+    drag = { pid:e.pointerId, ox:e.clientX - r.left, oy:e.clientY - r.top };
+    design.classList.add("dragging");
+    try { head.setPointerCapture(e.pointerId); } catch {}
+    e.preventDefault();
+  });
+  design.addEventListener("pointermove", e => {
+    if (!drag || e.pointerId !== drag.pid) return;
+    designMoved = true;
+    design.style.left = (e.clientX - drag.ox) + "px";
+    design.style.top = (e.clientY - drag.oy) + "px";
+    clampDesignPos();
+  });
+  const endDrag = e => {
+    if (!drag || (e && e.pointerId !== drag.pid)) return;
+    drag = null;
+    design.classList.remove("dragging");
+  };
+  design.addEventListener("pointerup", endDrag);
+  design.addEventListener("pointercancel", endDrag);
+})();
+window.addEventListener("resize", () => { if (design.classList.contains("open")) clampDesignPos(); });
+
 design.addEventListener("click", e => {
+  /* innerHTML差し替え後も document 側に泡立たせない（閉じ防止） */
+  e.stopPropagation();
+  if (e.target.id === "design-x" || e.target.closest("#design-x")){ closeDesign(); return; }
+  const tabBtn = e.target.closest("[data-design-tab]");
+  if (tabBtn){
+    designTab = tabBtn.dataset.designTab;
+    renderDesign();
+    return;
+  }
   if (e.target.id === "set-mytpl-apply"){
     const raw = +($("#set-mytpl-kb") && $("#set-mytpl-kb").value);
     const kb = Math.max(200, Math.min(20000, raw || DEFAULT_SETTINGS.myTplMaxKB));
@@ -4202,6 +4722,8 @@ design.addEventListener("click", e => {
   const wd = e.target.closest("[data-width-id]");
   const tg = e.target.closest("[data-target-id]");
   const ab = e.target.closest("[data-artboard-id]");
+  const ps = e.target.closest("[data-page-size-id]");
+  const pm = e.target.closest("[data-png-mode-id]");
   const shType = e.target.closest("[data-shell-type]");
   const shSide = e.target.closest("[data-shell-side]");
   const shRatio = e.target.closest("[data-shell-ratio]");
@@ -4209,7 +4731,7 @@ design.addEventListener("click", e => {
   const th = e.target.closest("[data-theme-id]");
   const bg = e.target.closest("[data-bg-id]");
   const ft = e.target.closest("[data-font-id]");
-  if (!pr && !wd && !tg && !ab && !shType && !shSide && !shRatio && !cv && !th && !bg && !ft) return;
+  if (!pr && !wd && !tg && !ab && !ps && !pm && !shType && !shSide && !shRatio && !cv && !th && !bg && !ft) return;
   if (pr){
     if (pr.disabled || pr.classList.contains("dis")) return;
     if (setProfile(pr.dataset.profileId)){
@@ -4225,7 +4747,15 @@ design.addEventListener("click", e => {
     const meta = targetDef(next);
     if (meta.width) doc.width = normalizeWidth(meta.width);
     save(); flipRender();
-    toast(`主な書き出し: ${meta.name}`);
+    toast(`編集ガイド: ${meta.name}`);
+    renderDesign();
+    return;
+  }
+  if (pm){
+    pushUndo(snap());
+    doc.pngMode = normalizePngMode(pm.dataset.pngModeId);
+    save(); flipRender();
+    toast(`PNG: ${pngModeLabel(doc.pngMode)}`);
     renderDesign();
     return;
   }
@@ -4233,6 +4763,15 @@ design.addEventListener("click", e => {
     pushUndo(snap());
     doc.artboard = normalizeArtboard(ab.dataset.artboardId);
     save(); flipRender();
+    toast(`スライド比率: ${artboardLabel(doc.artboard)}`);
+    renderDesign();
+    return;
+  }
+  if (ps){
+    pushUndo(snap());
+    doc.pageSize = normalizePageSize(ps.dataset.pageSizeId);
+    save(); flipRender();
+    toast(`PDF用紙: ${pageSizeLabel(doc.pageSize)}`);
     renderDesign();
     return;
   }
@@ -5607,6 +6146,38 @@ function exportPDF(){
 }
 
 async function exportPNG(){
+  const mode = normalizePngMode(doc.pngMode);
+  if (mode === "slices"){
+    if (freeMode){
+      toast("部品ごとのPNGはブロック編集向けです — 全体1枚で書き出します");
+    } else if (!doc.blocks.length){
+      toast("ブロックがありません");
+      return;
+    } else {
+      toast(`PNGを部品ごとに生成中…（${doc.blocks.length}枚 → ZIP）`);
+      try {
+        const title = (doc.blocks.find(b => b.type === "hero")?.props.title || "document");
+        const files = [];
+        for (let i = 0; i < doc.blocks.length; i++){
+          const slideHtml = buildSlideHTML(doc.blocks[i]);
+          const { canvas } = await htmlToCanvas(slideHtml, { width: 960, scale: 2 });
+          const blob = await new Promise((res, rej) => {
+            canvas.toBlob(b => b ? res(b) : rej(new Error("PNGの生成に失敗しました")), "image/png");
+          });
+          const bytes = new Uint8Array(await blob.arrayBuffer());
+          const n = String(i + 1).padStart(2, "0");
+          files.push({ name: `${n}.png`, data: bytes });
+        }
+        const zipBlob = buildZip(files);
+        const name = await downloadBlobAs(zipBlob, title + "-png", "zip");
+        if (name) toast(`PNG ${files.length} 枚をZIPで書き出しました`);
+      } catch(e){
+        console.error(e);
+        toast(e.message || "PNGの書き出しに失敗しました");
+      }
+      return;
+    }
+  }
   toast("PNGを生成しています…");
   try {
     const { html, title } = getExportPayload();
@@ -5796,8 +6367,40 @@ function closeExportMenu(){
   exMenu.classList.remove("open");
   btnExport.setAttribute("aria-expanded", "false");
 }
+function syncExportMenuHighlight(){
+  const planned = plannedExportKey();
+  const plannedName = targetDef(doc.target).name;
+  exMenu.querySelectorAll("[data-ex]").forEach(btn => {
+    const on = btn.dataset.ex === planned;
+    btn.classList.toggle("ex-planned", on);
+    const tag = btn.querySelector(".ex-tag");
+    if (tag) tag.hidden = !on;
+  });
+  btnExport.title = `予定: ${plannedName}（${EXPORT_KIND_LABEL[planned] || planned}）。他の形式も選べます`;
+}
+function confirmOffPlanExport(kind){
+  const planned = plannedExportKey();
+  if (kind === planned) return true;
+  const guide = targetDef(doc.target).name;
+  const want = EXPORT_KIND_LABEL[kind] || kind;
+  const expected = EXPORT_KIND_LABEL[planned] || planned;
+  return confirm(
+    `編集ガイドは「${guide}」（${expected}）向けです。\n` +
+    `「${want}」で書き出しますか？\n\n` +
+    `どちらでも書き出せます。キャンセルで戻ります。`
+  );
+}
+function runExportKind(kind){
+  if (kind === "html") exportHTML();
+  else if (kind === "zip") exportZip();
+  else if (kind === "pdf") exportPDF();
+  else if (kind === "png") exportPNG();
+  else if (kind === "webm") exportVideoStill();
+  else if (kind === "flip") exportFlipVideo();
+}
 function toggleExportMenu(){
   const open = !exMenu.classList.contains("open");
+  if (open) syncExportMenuHighlight();
   exMenu.classList.toggle("open", open);
   btnExport.setAttribute("aria-expanded", open ? "true" : "false");
 }
@@ -5808,14 +6411,10 @@ btnExport.addEventListener("click", e => {
 exMenu.addEventListener("click", e => {
   const b = e.target.closest("[data-ex]");
   if (!b || b.disabled) return;
-  closeExportMenu();
   const kind = b.dataset.ex;
-  if (kind === "html") exportHTML();
-  else if (kind === "zip") exportZip();
-  else if (kind === "pdf") exportPDF();
-  else if (kind === "png") exportPNG();
-  else if (kind === "webm") exportVideoStill();
-  else if (kind === "flip") exportFlipVideo();
+  closeExportMenu();
+  if (!confirmOffPlanExport(kind)) return;
+  runExportKind(kind);
 });
 document.addEventListener("click", e => {
   if (!e.target.closest(".export-wrap")) closeExportMenu();
@@ -5962,6 +6561,24 @@ function propsFromEl(type, el){
     });
     return normalizeCarouselProps(props);
   }
+  if (type === "code"){
+    props.lang = normalizeCodeLang(el.getAttribute("data-lang") || props.lang);
+    return normalizeCodeProps(props);
+  }
+  if (type === "table"){
+    if (el.hasAttribute("data-sheet")) props.sheet = el.getAttribute("data-sheet") === "1";
+    if (el.hasAttribute("data-col-width")) props.colWidth = normalizeTableColWidth(el.getAttribute("data-col-width"));
+    return normalizeTableProps(props);
+  }
+  if (type === "linkcard"){
+    const a = el.getAttribute("data-align");
+    if (a) props.align = normalizeAlign(a);
+    else if (props.align == null || props.align === "") props.align = "start";
+  }
+  if (el.hasAttribute("data-space")) props.space = normalizeSpace(el.getAttribute("data-space"));
+  if (el.hasAttribute("data-variant") && blockVariants(type)){
+    props.variant = normalizeVariant(type, el.getAttribute("data-variant"));
+  }
   return props;
 }
 
@@ -6083,7 +6700,7 @@ $("#file-in").addEventListener("change", async e => {
   ingestHTML(await f.text());
 });
 
-/* ---- 新規ウィザード（1:テンプレ → 2:書き出し先）目的質問は廃止 ---- */
+/* ---- 新規ウィザード（選んだら進む: テンプレ → 書き出し → 必要なら設定） ---- */
 const wizMask = $("#wiz-mask");
 let wizState = {
   step: 1,
@@ -6092,18 +6709,28 @@ let wizState = {
   target: "web",
   profile: "safe",
   artboard: "landscape",
+  pageSize: "a4",
+  pngMode: "whole",
 };
 
 function wizOfficialList(){
   /* ブランクを先頭に（TEMPLATES 順を尊重） */
   return TEMPLATES.slice();
 }
+function wizStepsHTML(active){
+  const s3 = targetNeedsFollowUp(wizState.target) || active === 3;
+  return `<div class="wiz-steps">
+    <span class="ws${active === 1 ? " on" : ""}">1 テンプレ</span>
+    <span class="ws${active === 2 ? " on" : ""}">2 書き出し</span>
+    ${s3 || active >= 2 ? `<span class="ws${active === 3 ? " on" : ""}">3 設定</span>` : ""}
+  </div>`;
+}
 function renderWizard(){
   const title = $("#wiz-title");
   const desc = $("#wiz-desc");
   if (wizState.step === 1){
     if (title) title.textContent = "新規作成 — テンプレート";
-    if (desc) desc.textContent = "白紙から始めるか、雛形を選んでください。次で主な書き出し先を決めます。";
+    if (desc) desc.textContent = "選ぶと次へ進みます。白紙からでも雛形からでもOKです。";
     const mine = loadMyTemplates();
     const official = wizOfficialList().map(t => `
       <button type="button" class="wiz-tpl${wizState.tplId === t.id && !wizState.myTplId ? " on" : ""}" data-wiz-tpl="${t.id}">
@@ -6118,62 +6745,108 @@ function renderWizard(){
         </button>`).join("")
       : "";
     $("#wiz-body").innerHTML = `
-      <div class="wiz-steps"><span class="ws on">1 テンプレ</span><span class="ws">2 書き出し</span></div>
+      ${wizStepsHTML(1)}
       <div class="dlab" style="margin:0 0 8px;color:#8A8A94;font-size:11px;font-weight:700;letter-spacing:.1em">公式</div>
       <div class="wiz-tpl-grid">${official}</div>
       ${myCards ? `<div class="dlab" style="margin:12px 0 8px;color:#8A8A94;font-size:11px;font-weight:700;letter-spacing:.1em">マイ</div><div class="wiz-tpl-grid">${myCards}</div>` : ""}
       <div class="wiz-foot">
         <button type="button" class="txtbtn" id="wiz-cancel">キャンセル</button>
-        <button type="button" class="cap-btn" id="wiz-next">次へ — 書き出し先</button>
       </div>`;
     return;
   }
-  /* step 2 */
-  if (title) title.textContent = "新規作成 — 書き出し先";
-  if (desc) desc.textContent = "いちばん使う書き出しに合わせ、編集画面のガイドを出します。あとからデザインで変更できます。";
-  const targets = TARGET_ORDER.map(id => {
-    const m = TARGET_META[id];
-    return `<button type="button" class="wiz-opt${wizState.target === id ? " on" : ""}" data-wiz-target="${id}">
-      <span class="wn">${esc(m.name)}</span>
-      <span class="wd">${esc(m.desc)}</span>
-    </button>`;
-  }).join("");
-  let extra = "";
+  if (wizState.step === 2){
+    if (title) title.textContent = "新規作成 — 書き出し先";
+    if (desc) desc.textContent = "Web/ZIP→公開先、PNG→切り方、スライド→比率、PDF→用紙サイズへ進みます。";
+    const targets = TARGET_ORDER.map(id => {
+      const m = TARGET_META[id];
+      return `<button type="button" class="wiz-opt${wizState.target === id ? " on" : ""}" data-wiz-target="${id}">
+        <span class="wn">${esc(m.name)}</span>
+        <span class="wd">${esc(m.desc)}</span>
+      </button>`;
+    }).join("");
+    $("#wiz-body").innerHTML = `
+      ${wizStepsHTML(2)}
+      <div class="wiz-grid">${targets}</div>
+      <div class="wiz-foot">
+        <button type="button" class="txtbtn" id="wiz-back">戻る</button>
+        <button type="button" class="txtbtn" id="wiz-cancel">キャンセル</button>
+      </div>`;
+    return;
+  }
+  /* step 3: 出力ごとの設定（選んだら確定） */
   if (targetNeedsProfile(wizState.target)){
-    extra = `
-      <div class="dlab" style="margin:12px 0 8px;color:#8A8A94;font-size:11px;font-weight:700;letter-spacing:.1em">公開先の厳しさ（CSP）</div>
-      <div class="dhint" style="margin:-4px 0 10px">Web / ZIP 向け。スクリプトが要る部品を出すかどうかを決めます。</div>
+    if (title) title.textContent = "新規作成 — 公開先の厳しさ";
+    if (desc) desc.textContent = "選ぶとその設定で作り始めます。ページ幅はデザインから変えられます。";
+    $("#wiz-body").innerHTML = `
+      ${wizStepsHTML(3)}
       <div class="wiz-grid">${PROFILES.filter(p => !p.disabled).map(p => `
         <button type="button" class="wiz-opt${wizState.profile === p.id ? " on" : ""}" data-wiz-profile="${p.id}">
           <span class="wn">${esc(p.label)}</span>
           <span class="wd">${esc(p.desc)}</span>
           ${p.id === "safe" ? `<span class="wh">迷ったらこちら</span>` : ""}
-        </button>`).join("")}</div>`;
-  } else if (wizState.target === "png"){
-    extra = `
-      <div class="dlab" style="margin:12px 0 8px;color:#8A8A94;font-size:11px;font-weight:700;letter-spacing:.1em">画像のサイズ感</div>
+        </button>`).join("")}</div>
+      <div class="wiz-foot">
+        <button type="button" class="txtbtn" id="wiz-back">戻る</button>
+        <button type="button" class="txtbtn" id="wiz-cancel">キャンセル</button>
+      </div>`;
+    return;
+  }
+  if (targetNeedsRatio(wizState.target)){
+    if (title) title.textContent = "新規作成 — スライドの比率";
+    if (desc) desc.textContent = "選ぶとその比率のカードで作り始めます（あとからデザインでも変更可）。";
+    $("#wiz-body").innerHTML = `
+      ${wizStepsHTML(3)}
       <div class="wiz-grid">${ARTBOARD_ORDER.map(id => `
         <button type="button" class="wiz-opt${wizState.artboard === id ? " on" : ""}" data-wiz-artboard="${id}">
+          <span class="ar-prev" data-ar="${id}" aria-hidden="true" style="margin-bottom:6px"></span>
           <span class="wn">${esc(ARTBOARD_META[id].name)}</span>
           <span class="wd">${esc(ARTBOARD_META[id].desc)}</span>
-        </button>`).join("")}</div>`;
-  } else if (wizState.target === "slide"){
-    extra = `<div class="dhint" style="margin:8px 0 0">編集画面でブロックのあいだに「スライドの切れ目」を表示します。</div>`;
-  } else if (wizState.target === "pdf"){
-    extra = `<div class="dhint" style="margin:8px 0 0">編集画面に PDF のページ目安線を表示します。</div>`;
+        </button>`).join("")}</div>
+      <div class="wiz-foot">
+        <button type="button" class="txtbtn" id="wiz-back">戻る</button>
+        <button type="button" class="txtbtn" id="wiz-cancel">キャンセル</button>
+      </div>`;
+    return;
   }
-  $("#wiz-body").innerHTML = `
-    <div class="wiz-steps"><span class="ws">1 テンプレ</span><span class="ws on">2 書き出し</span></div>
-    <div class="wiz-grid">${targets}</div>
-    ${extra}
-    <div class="wiz-foot">
-      <button type="button" class="txtbtn" id="wiz-back">戻る</button>
-      <button type="button" class="cap-btn" id="wiz-go">この設定で作る</button>
-    </div>`;
+  if (targetNeedsPngMode(wizState.target)){
+    if (title) title.textContent = "新規作成 — PNGの切り方";
+    if (desc) desc.textContent = "全体を1枚にするか、部品ごとに分けるか。正方形などのサイズ指定はありません。";
+    $("#wiz-body").innerHTML = `
+      ${wizStepsHTML(3)}
+      <div class="wiz-grid">${PNG_MODE_ORDER.map(id => `
+        <button type="button" class="wiz-opt${wizState.pngMode === id ? " on" : ""}" data-wiz-pngmode="${id}">
+          <span class="wn">${esc(PNG_MODE_META[id].name)}</span>
+          <span class="wd">${esc(PNG_MODE_META[id].desc)}</span>
+        </button>`).join("")}</div>
+      <div class="wiz-foot">
+        <button type="button" class="txtbtn" id="wiz-back">戻る</button>
+        <button type="button" class="txtbtn" id="wiz-cancel">キャンセル</button>
+      </div>`;
+    return;
+  }
+  if (targetNeedsPageSize(wizState.target)){
+    if (title) title.textContent = "新規作成 — PDFの用紙サイズ";
+    if (desc) desc.textContent = "選ぶとその用紙のページ境界目安で作り始めます（あとからデザインでも変更可）。";
+    $("#wiz-body").innerHTML = `
+      ${wizStepsHTML(3)}
+      <div class="wiz-grid">${PAGE_SIZE_ORDER.map(id => `
+        <button type="button" class="wiz-opt${wizState.pageSize === id ? " on" : ""}" data-wiz-pagesize="${id}">
+          <span class="page-prev" data-page="${id}" aria-hidden="true" style="margin-bottom:6px"></span>
+          <span class="wn">${esc(PAGE_SIZE_META[id].name)}</span>
+          <span class="wd">${esc(PAGE_SIZE_META[id].desc)}</span>
+        </button>`).join("")}</div>
+      <div class="wiz-foot">
+        <button type="button" class="txtbtn" id="wiz-back">戻る</button>
+        <button type="button" class="txtbtn" id="wiz-cancel">キャンセル</button>
+      </div>`;
+    return;
+  }
+  /* フォールバック（設定不要なのに step3）→ 確定 */
+  finishNewFromWizard();
 }
 function openWizard(){
   closePalette(); closeDesign(); closeChartEdit(); closeHeroBgPanel(); closeTemplates();
-  wizState = { step:1, tplId:"blank", myTplId:null, target:"web", profile:"safe", artboard:"landscape" };
+  wizState = { step:1, tplId:"blank", myTplId:null, target:"web", profile:"safe", artboard:"landscape", pageSize:"a4", pngMode:"whole" };
   renderWizard();
   wizMask.classList.add("open");
   requestAnimationFrame(() => wizMask.classList.add("vis"));
@@ -6186,6 +6859,8 @@ function applyOutputPrefsToDoc(d){
   const t = normalizeTarget(wizState.target);
   d.target = t;
   d.artboard = normalizeArtboard(wizState.artboard);
+  d.pageSize = normalizePageSize(wizState.pageSize);
+  d.pngMode = normalizePngMode(wizState.pngMode);
   const meta = targetDef(t);
   d.width = normalizeWidth(meta.width || d.width || "default");
   if (targetNeedsProfile(t)) d.profile = normalizeProfile(wizState.profile);
@@ -6219,6 +6894,7 @@ $("#wiz-body").addEventListener("click", e => {
   if (tpl){
     wizState.tplId = tpl.dataset.wizTpl;
     wizState.myTplId = null;
+    wizState.step = 2;
     renderWizard();
     return;
   }
@@ -6226,43 +6902,51 @@ $("#wiz-body").addEventListener("click", e => {
   if (my){
     wizState.myTplId = my.dataset.wizMytpl;
     wizState.tplId = null;
+    wizState.step = 2;
     renderWizard();
     return;
   }
   const tg = e.target.closest("[data-wiz-target]");
   if (tg){
     wizState.target = normalizeTarget(tg.dataset.wizTarget);
-    const meta = targetDef(wizState.target);
     if (!targetNeedsProfile(wizState.target)) wizState.profile = "safe";
-    renderWizard();
+    if (targetNeedsFollowUp(wizState.target)){
+      wizState.step = 3;
+      renderWizard();
+    } else {
+      finishNewFromWizard();
+    }
     return;
   }
   const pr = e.target.closest("[data-wiz-profile]");
   if (pr){
     wizState.profile = normalizeProfile(pr.dataset.wizProfile);
-    renderWizard();
+    finishNewFromWizard();
     return;
   }
   const ab = e.target.closest("[data-wiz-artboard]");
   if (ab){
     wizState.artboard = normalizeArtboard(ab.dataset.wizArtboard);
-    renderWizard();
+    finishNewFromWizard();
+    return;
+  }
+  const pmode = e.target.closest("[data-wiz-pngmode]");
+  if (pmode){
+    wizState.pngMode = normalizePngMode(pmode.dataset.wizPngmode);
+    finishNewFromWizard();
+    return;
+  }
+  const psz = e.target.closest("[data-wiz-pagesize]");
+  if (psz){
+    wizState.pageSize = normalizePageSize(psz.dataset.wizPagesize);
+    finishNewFromWizard();
     return;
   }
   if (e.target.id === "wiz-cancel" || e.target.closest("#wiz-cancel")){ closeWizard(); return; }
   if (e.target.id === "wiz-back" || e.target.closest("#wiz-back")){
-    wizState.step = 1;
+    if (wizState.step === 3) wizState.step = 2;
+    else if (wizState.step === 2) wizState.step = 1;
     renderWizard();
-    return;
-  }
-  if (e.target.id === "wiz-next" || e.target.closest("#wiz-next")){
-    if (!wizState.tplId && !wizState.myTplId){ toast("テンプレートを選んでください"); return; }
-    wizState.step = 2;
-    renderWizard();
-    return;
-  }
-  if (e.target.id === "wiz-go" || e.target.closest("#wiz-go")){
-    finishNewFromWizard();
   }
 });
 
@@ -6392,6 +7076,7 @@ function buildPrompt(){
   const profile = normalizeProfile(doc.profile);
   const pdef = profileDef(profile);
   const allowed = allowedBlockTypes(profile);
+  const codeLangList = CODE_LANG_ORDER.join(" / ");
   const examples = allowed.filter(type => !REG[type].chart).map(type => {
     const def = REG[type];
     const p = def.defaults();
@@ -6416,6 +7101,9 @@ function buildPrompt(){
   return [
 "# 役割",
 "あなたは「Hatlier」という単一HTMLエディタと同じ規則で、1枚で完結するHTMLファイルを作るアシスタントです。次の規則を必ず守ってください。",
+"",
+`# 版（契約）`,
+`- このプロンプトは Hatlier v${HATLIER_VERSION} の契約です。フォーマット名・schema・class・data-* はテンプレート通りに保ち、再編集できるHTMLを返してください。`,
 "",
 "# 絶対ルール",
 "1. 出力は .html ファイル1枚のみ。外部CSS/JS/Webフォント/外部画像リンクは使わない（画像を入れる場合は data: URI で埋め込む）。",
@@ -6465,8 +7153,14 @@ FENCE,
 "# 全ブロック共通のオプション（属性を足すだけ。省略可）",
 '- data-space（この部品の余白）: default / tight（詰め）/ roomy（ゆったり）',
 '- data-variant（見た目のプリセット）: 部品ごとに決まった値のみ。下の「使えるブロック」の例に出てくる値だけを使う。',
-'  例) hero: display（標準）/ quiet（控えめ）/ banner（短め）/ minimal（最小）',
+'  例) hero: display / quiet / banner / minimal',
+'  例) text: plain / line / card / accent / bubble / bubble-up',
+'  例) divider: line / dashed / double / dots / ornament / fade',
+'  例) steps: line / stairs / flow',
 '- 画像・動画は data-frame（表示幅）: full / wide / half / third と data-align（寄せ）: start / center / end を付けられる。px指定は不可。',
+'- リンクカード（linkcard）も data-align: start / center / end（既定は start）。',
+'- テーブルは data-sheet=\"0|1\"（Excel風の列ABC・行番号）と data-col-width=\"equal|auto\"。任意の .tbl-title（data-edit=\"title\"）で表名。',
+`- コードは <section class="blk b-code" data-lang="…">。data-lang は次のいずれかのみ: ${codeLangList}`,
 "",
 "# 文書の骨組み（stack の場合）",
 FENCE + "html",
@@ -6498,13 +7192,45 @@ examples,
 "",
 "※ 次はツール側の機能なので生成対象外です（雛形どおり“標準”のままにしてください）:",
 "　・グラフ（棒・円・折れ線・散布図など）… エディタの「＋」→「グラフ」から作成・編集",
-"　・ステップの「階段」「フロー」表示 … エディタでステップを選び「表示」ボタンで切替",
 "　・ヒーローの背景画像 … エディタでカメラ／画像から設定し data: URI で埋め込み",
 "　・QR／バーコードの画像 … 文字を入れればエディタが生成するので、雛形の src のままでよい",
+"　・書き出しガイド（PNG全体/部品ごと・PDF用紙・スライド比率など）… エディタの「書き出し／デザイン」設定。生成HTMLには書かなくてよい",
 "",
 "# 作りたい内容（ここに具体的な指示を書き足して使う）",
 "（例1: ○○というサービスの紹介ページ。midnightテーマ・data-bg=neuralで。hero / stats / steps / faq / closing を含めて。）",
 "（例2: 社内向けの手順書。構図は split（data-ratio=2-1・data-side=end）で、メインに手順、サイドに注意事項と連絡先。）",
+  ].join("\n");
+}
+
+function buildSkillMarkdown(){
+  const prompt = buildPrompt();
+  return [
+    "---",
+    "name: hatlier-html",
+    `description: Produce single-file Hatlier-compatible HTML using the official block contract (profile, shell, shared CSS, data-* only). Use when the user wants Hatlier format pages, paste-ready HTML for the Hatlier editor, or Hatlier v${HATLIER_VERSION} output.`,
+    "---",
+    "",
+    `# Hatlier HTML（v${HATLIER_VERSION}）`,
+    "",
+    "この Skill は Hatlier エディタ内蔵の生成AI用プロンプトと同じ契約です。返ってきた HTML は Hatlier の「貼る」に入れます（```html 付きでも可）。",
+    "",
+    "## いつ使うか",
+    "- Hatlier と同じブロック構造の1枚 HTML が欲しいとき",
+    "- ChatGPT / Claude / Cursor に「Hatlier形式で」作らせるとき",
+    "",
+    "## 手順",
+    "1. 下のプロンプト本文に、作りたい内容を追記して AI に渡す",
+    "2. 返ってきた HTML を Hatlier の「貼る」に入れる",
+    "3. 形式が合えばブロック編集、合わなければフリー編集",
+    "",
+    "## インストール（Cursor）",
+    "- 個人: このフォルダごと `~/.cursor/skills/hatlier-html/` に置く",
+    "- プロジェクト: `.cursor/skills/hatlier-html/` に置く",
+    "- 最新契約が欲しいときは Hatlier の ✦「Skillを保存」から再ダウンロードする（正本はエディタ）",
+    "",
+    "## プロンプト本文",
+    "",
+    prompt,
   ].join("\n");
 }
 
@@ -6534,6 +7260,14 @@ $("#ai-copy").addEventListener("click", async () => {
     catch { toast("コピーできませんでした — 手動で選択してください"); }
     s.removeAllRanges();
   }
+});
+$("#ai-skill").addEventListener("click", async () => {
+  const md = buildSkillMarkdown();
+  const zip = buildZip([
+    { name: "hatlier-html/SKILL.md", data: new TextEncoder().encode(md) },
+  ]);
+  const name = await downloadBlobAs(zip, `hatlier-skill-v${HATLIER_VERSION}`, "zip");
+  if (name) toast("Skill ZIP を保存しました（hatlier-html/SKILL.md）");
 });
 $("#ai-paste").addEventListener("click", () => {
   closeAI();
@@ -6913,6 +7647,7 @@ window.__hatlier = {
   insertBlock,
   setProfile,
   buildPrompt,
+  buildSkillMarkdown,
   setShell,
   shellOf,
   blocksOf,
@@ -7027,7 +7762,9 @@ window.__hatlierSelfTest = function(){
       ok("palette:hides-pagesearch-on-safe", !allowedBlockTypes("safe").includes("pagesearch"));
       ok("palette:shows-pagesearch-on-standard", allowedBlockTypes("standard").includes("pagesearch"));
       document.querySelector("#btn-design")?.click();
+      document.querySelector('#design [data-design-tab="look"]')?.click();
       ok("ui:design-has-cvd", document.querySelectorAll("#design [data-cvd-id]").length === 4, String(document.querySelectorAll("#design [data-cvd-id]").length));
+      document.querySelector('#design [data-design-tab="layout"]')?.click();
       ok("ui:design-has-shell", document.querySelectorAll("#design [data-shell-type]").length === 2);
       closeDesign();
 
@@ -7103,25 +7840,90 @@ window.__hatlierSelfTest = function(){
       ok("divider:dashed-attr", dHtml.indexOf('data-variant="dashed"') !== -1);
       ok("variant:safe-text-ok", profileAllows("safe", "text", { variant:"bubble" }));
       ok("variant:does-not-bypass-js-gate", !profileAllows("safe", "pagesearch"));
+      ok("colLetter:A", colLetter(0) === "A" && colLetter(25) === "Z" && colLetter(26) === "AA");
+      const tbl = REG.table.render({ title:"売上", head:["A","B"], rows:[["1","2"]], sheet:true, colWidth:"auto" }, true);
+      ok("table:title", tbl.indexOf("売上") !== -1 && tbl.indexOf("tbl-title") !== -1);
+      ok("table:sheet-abc", tbl.indexOf("tbl-letter") !== -1 && tbl.indexOf(">A<") !== -1 && tbl.indexOf("tbl-rownum") !== -1);
+      ok("table:col-auto", tbl.indexOf('data-col-width="auto"') !== -1);
+      const linkC = REG.linkcard.render({ title:"t", desc:"d", url:"https://a.test", align:"center" }, true);
+      ok("link:align-center", linkC.indexOf('data-align="center"') !== -1);
+      const linkDef = REG.linkcard.render(REG.linkcard.defaults(), true);
+      ok("link:default-start", linkDef.indexOf('data-align="start"') !== -1);
+      const codeHtml = REG.code.render(REG.code.defaults(), true);
+      ok("code:lang-attr", codeHtml.indexOf('data-lang="python"') !== -1 && codeHtml.indexOf("code-lang") !== -1);
+      ok("code:normalize-alias", normalizeCodeLang("js") === "javascript" && normalizeCodeLang("py") === "python");
+      ok("code:infer-ext", inferCodeLangFromFile("app.ts") === "typescript");
+      doc = oneBlockDoc("text"); selectedId = doc.blocks[0].id; render();
+      ok("ui:bkind-on-sel", !!document.querySelector(".bw.sel .bkind-nm"));
 
       /* 書き出し先 target と新規ウィザード */
       ok("target:normalize", normalizeTarget("nope") === "web" && normalizeTarget("png") === "png");
       doc = migrate({ theme:"paper", blocks:[{ id:uid(), type:"text", props: REG.text.defaults() }, { id:uid(), type:"text", props: REG.text.defaults() }], target:"slide" });
       render();
-      ok("target:slide-breaks", document.querySelectorAll("#canvas .slide-break").length >= 1);
-      doc.target = "pdf"; render();
+      ok("target:slide-breaks", document.querySelectorAll("#canvas .slide-card").length >= 1);
+      doc.artboard = "fourthree"; render();
+      ok("target:slide-ratio-4x3", canvas.dataset.artboard === "fourthree");
+      doc.target = "pdf"; doc.pageSize = "a4"; render();
       ok("target:pdf-attr", canvas.dataset.target === "pdf");
-      doc.target = "png"; doc.artboard = "square"; render();
-      ok("target:png-artboard", canvas.dataset.target === "png" && canvas.dataset.artboard === "square");
+      ok("target:pdf-bands", document.querySelectorAll("#canvas .pdf-page-band").length >= 1);
+      doc.pageSize = "a4-landscape"; render();
+      ok("target:pdf-landscape", canvas.dataset.pageSize === "a4-landscape");
+      doc.target = "png"; doc.pngMode = "whole"; render();
+      ok("target:png-whole", canvas.dataset.target === "png" && canvas.dataset.pngMode === "whole");
+      ok("target:png-whole-label", !!document.querySelector("#canvas .png-guide-label"));
+      ok("target:png-no-aspect-box", !document.querySelector("#canvas .png-guide"));
+      doc.pngMode = "slices"; render();
+      ok("target:png-slices-cards", document.querySelectorAll("#canvas .slide-card").length >= 1);
+      ok("pngmode:has-2", PNG_MODE_ORDER.length === 2);
+      ok("artboard:has-4", ARTBOARD_ORDER.length === 4);
+      ok("pagesize:has-4", PAGE_SIZE_ORDER.length === 4);
       document.querySelector("#btn-design")?.click();
+      document.querySelector('#design [data-design-tab="export"]')?.click();
       ok("ui:design-has-targets", document.querySelectorAll("#design [data-target-id]").length === TARGET_ORDER.length);
+      ok("ui:design-has-close", !!document.querySelector("#design-x"));
+      ok("ui:design-has-tabs", document.querySelectorAll("#design [data-design-tab]").length === DESIGN_TABS.length);
+      document.querySelector('#design [data-design-tab="look"]')?.click();
+      ok("ui:design-tab-look", !!document.querySelector("#design [data-theme-id]") && !document.querySelector("#design [data-target-id]"));
+      document.querySelector('#design [data-design-tab="export"]')?.click();
+      /* デザイン変更後も窓が開いたまま */
+      document.querySelector('#design [data-target-id="web"]')?.click();
+      ok("ui:design-stays-open", design.classList.contains("open"));
       closeDesign();
+      doc.target = "png";
+      syncExportMenuHighlight();
+      ok("ui:export-planned-png", document.querySelector('#exmenu [data-ex="png"]')?.classList.contains("ex-planned"));
+      ok("ui:export-planned-not-html", !document.querySelector('#exmenu [data-ex="html"]')?.classList.contains("ex-planned"));
+      ok("export:offplan-blocks-mismatch", plannedExportKey() === "png" && plannedExportKey() !== "html");
       openWizard();
       ok("ui:wiz-step1-templates", document.querySelectorAll("#wiz-body [data-wiz-tpl]").length >= 2);
       ok("ui:wiz-blank-first", document.querySelector("#wiz-body [data-wiz-tpl]")?.dataset.wizTpl === "blank");
-      document.querySelector("#wiz-next")?.click();
-      ok("ui:wiz-step2-targets", document.querySelectorAll("#wiz-body [data-wiz-target]").length === TARGET_ORDER.length);
+      document.querySelector('#wiz-body [data-wiz-tpl="blank"]')?.click();
+      ok("ui:wiz-auto-to-target", document.querySelectorAll("#wiz-body [data-wiz-target]").length === TARGET_ORDER.length);
+      document.querySelector('#wiz-body [data-wiz-target="web"]')?.click();
+      ok("ui:wiz-web-to-profile", document.querySelectorAll("#wiz-body [data-wiz-profile]").length >= 1);
+      document.querySelector("#wiz-back")?.click();
+      document.querySelector('#wiz-body [data-wiz-target="png"]')?.click();
+      ok("ui:wiz-png-to-mode", document.querySelectorAll("#wiz-body [data-wiz-pngmode]").length === PNG_MODE_ORDER.length);
+      document.querySelector("#wiz-back")?.click();
+      document.querySelector('#wiz-body [data-wiz-target="slide"]')?.click();
+      ok("ui:wiz-slide-to-ratio", document.querySelectorAll("#wiz-body [data-wiz-artboard]").length === 4);
+      document.querySelector("#wiz-back")?.click();
+      document.querySelector('#wiz-body [data-wiz-target="pdf"]')?.click();
+      ok("ui:wiz-pdf-to-pagesize", document.querySelectorAll("#wiz-body [data-wiz-pagesize]").length === PAGE_SIZE_ORDER.length);
       closeWizard();
+      /* デザイン: 出力に応じて設定だけ出す */
+      doc.target = "web"; renderDesign();
+      ok("ui:design-web-shows-profile", document.querySelectorAll("#design [data-profile-id]").length >= 1);
+      ok("ui:design-web-hides-pngmode", !document.querySelector("#design [data-png-mode-id]"));
+      doc.target = "png"; renderDesign();
+      ok("ui:design-png-shows-mode", document.querySelectorAll("#design [data-png-mode-id]").length === PNG_MODE_ORDER.length);
+      ok("ui:design-png-hides-artboard", !document.querySelector("#design [data-artboard-id]"));
+      ok("ui:design-png-hides-profile", !document.querySelector("#design [data-profile-id]"));
+      doc.target = "slide"; renderDesign();
+      ok("ui:design-slide-shows-ratio", document.querySelectorAll("#design [data-artboard-id]").length === 4);
+      doc.target = "pdf"; renderDesign();
+      ok("ui:design-pdf-shows-pagesize", document.querySelectorAll("#design [data-page-size-id]").length === PAGE_SIZE_ORDER.length);
+      closeDesign();
 
       /* AI用プロンプトが現行仕様に追従しているか（説明漏れの回帰検出） */
       const prompt = buildPrompt();
@@ -7130,6 +7932,13 @@ window.__hatlierSelfTest = function(){
       ok("prompt:has-common-opts", prompt.indexOf("data-space") !== -1 && prompt.indexOf("data-frame") !== -1);
       ok("prompt:bans-free-position", prompt.indexOf("絶対座標") !== -1);
       ok("prompt:has-profile", prompt.indexOf('data-profile="' + normalizeProfile(doc.profile) + '"') !== -1);
+      ok("prompt:has-version", prompt.indexOf("v" + HATLIER_VERSION) !== -1);
+      ok("prompt:has-code-lang", prompt.indexOf("data-lang") !== -1 && prompt.indexOf("python") !== -1);
+      ok("prompt:has-table-opts", prompt.indexOf("data-sheet") !== -1 && prompt.indexOf("data-col-width") !== -1);
+      ok("prompt:has-text-variants", prompt.indexOf("bubble-up") !== -1);
+      const skill = buildSkillMarkdown();
+      ok("skill:frontmatter", skill.indexOf("name: hatlier-html") !== -1 && skill.indexOf("## プロンプト本文") !== -1);
+      ok("ui:ai-skill-btn", !!document.getElementById("ai-skill"));
     } catch(e){ ok("ui", false, e && e.message); }
   } finally {
     doc = JSON.parse(saved);
